@@ -127,7 +127,7 @@ Xmpp4Js.Lang.namespace( "Xmpp4Js.Event" );
 Xmpp4Js.Event.EventProvider = function(config) {
     this.eventListenerManager = new EventListenerManager();
 
-    if( config.listeners ) {
+    if( config && config.listeners ) {
         this.on( config.listeners );
     }
 }
