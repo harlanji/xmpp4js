@@ -1,0 +1,206 @@
+<html>
+	<head>
+		<title>JSUnit - RosterWindowTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+		
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+	
+		
+	</head>
+	<body>
+		<script type="text/javascript">
+
+
+var DummyClass = function() {
+    this.addEvents({
+        "something" : true,
+        "somethingelse" : true
+    });  
+}
+
+Xmpp4Js.Lang.extend( DummyClass, Xmpp4Js.Event.EventProvider, {} );
+
+var dummy;
+    
+function setUp() {
+    dummy = new DummyClass();
+}
+function tearDown() {
+    dummy = null;
+}
+
+// TODO test Xmpp4Js.Ext.PacketExtensionProvider itself.
+
+function testAddListenerSingle() {
+    
+    var eventFired = false;
+    
+    dummy.on("something", function() {
+        eventFired = true;
+    });
+    
+    dummy.fireEvent( "something" );
+    
+    assertTrue( "Event was not fired", eventFired );
+}
+
+function testAddListenerSingleArg() {
+    
+    var expectedArgument = "abc123";
+    var actualArgument;
+    
+    dummy.on("something", function(arg) {
+        actualArgument = arg;
+    });
+    
+    dummy.fireEvent( "something", expectedArgument );
+    
+    assertEquals( "Argument did not match", expectedArgument, actualArgument);
+}
+
+function testAddListenerSingleScope() {
+    
+    var expectedScope = {
+        field: "abc123"
+    };
+    var actualScope;
+    
+    dummy.on("something", function() {
+        actualScope = this;
+    }, expectedScope);
+    
+    dummy.fireEvent( "something" );
+    
+    // assertSame?
+    assertEquals( "Scope did not match", expectedScope, actualScope);
+    assertEquals( "Field on scope did not match", expectedScope.field, actualScope.field);
+}
+
+function testAddListenerMultiple() {
+    
+    var somethingFired = false;
+    var somethingelseFired = false;
+    
+    dummy.on({
+        "something": function() {
+            somethingFired = true;
+        },
+        "somethingelse": function() {
+            somethingelseFired = true;
+        }
+    });
+    
+    dummy.fireEvent( "something" );
+    dummy.fireEvent( "somethingelse" );
+
+    assertTrue( "Event was not fired (something)", somethingFired );
+    assertTrue( "Event was not fired (somethingelse)", somethingelseFired );
+}
+
+// scope can not be passed in arguments
+function testAddListenerMultipleScopeInline() {
+    
+    var expectedScope = {
+        field: "abc123"
+    };
+    var actualScope;
+    
+    dummy.on({
+        scope: expectedScope,
+
+        "something": function() {
+            actualScope = this;
+        }
+    });
+    
+    dummy.fireEvent( "something" );
+    
+    // assertSame?
+    assertEquals( "Scope did not match", expectedScope, actualScope);
+    assertEquals( "Field on scope did not match", expectedScope.field, actualScope.field);
+}
+
+function testRemoveListenerSingle() {
+    
+    var eventFired = false;
+    var somethingListener =  function() {
+        eventFired = true;
+    };
+        
+    
+    dummy.on("something", somethingListener);
+    dummy.un("something", somethingListener);
+    
+    dummy.fireEvent( "something" );
+    
+    assertFalse( "Event WAS fired but should not have been", eventFired );
+    
+}
+
+function testRemoveListenerMultiple() {
+    
+    var somethingFired = false;
+    var somethingelseFired = false;
+    
+    var somethingListner = function() {
+        somethingFired = true;
+    };
+    
+    var somethingelseListener = function() {
+        somethingelseFired = true;
+    }
+    
+    dummy.on({
+        "something": somethingListner,
+        "somethingelse": somethingelseListener
+    });
+    
+    dummy.un({
+        "something": somethingListner,
+        "somethingelse": somethingelseListener
+    });
+    
+    dummy.fireEvent( "something" );
+    dummy.fireEvent( "somethingelse" );
+
+    assertFalse( "Event WAS fired but should not have been (something)", somethingFired );
+    assertFalse( "Event WAS fired but should not have been (somethingelse)", somethingelseFired );
+}
+
+function testAddListenerSingleOptionSingle() {
+    
+    
+    var eventFiredCount = 0;
+    
+    dummy.on("something", function() {
+        eventFiredCount++
+    }, undefined, {single:true});
+    
+    dummy.fireEvent( "something" );
+    dummy.fireEvent( "something" );
+    
+    assertEquals( "Event was fired more than once", 1, eventFiredCount );
+}
+
+function BROKEN_testAddListenerSingleOptionSingle_Recursion() {
+    
+    
+    var eventFiredCount = 0;
+    
+    dummy.on("something", function() {
+        eventFiredCount++
+        dummy.fireEvent( "something" );
+    }, undefined, {single:true});
+    
+    dummy.fireEvent( "something" );
+    
+    assertEquals( "Event was fired more than once", 1, eventFiredCount );
+}
+
+
+		</script>
+	</body>
+</html>
+
+

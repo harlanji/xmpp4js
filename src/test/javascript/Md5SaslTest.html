@@ -1,0 +1,92 @@
+<html>
+    <head>
+        <title>JSUnit - RosterWindowTest</title>
+        <script language="javascript" src="app/jsUnitCore.js"></script>
+        
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+        
+    </head>
+    <body>
+        <script type="text/javascript">
+
+
+var USERNAME = "test2";
+var PASSWORD = "test2";
+var DOMAIN = "soashable.com";
+
+var FIELDS_NORMAL = {"a" : "b", "cd" : "ef", "g-hi" : "jkl"};
+var FIELDS_SERIAL = 'a="b",cd="ef",g-hi="jkl"';
+var FIELDS_SERIAL_UNQUOTED = 'a=b,cd=ef,g-hi=jkl';
+
+
+var KNOWN_CNONCE = "HJ06hjl7iVjawF";
+var KNOWN_RESPONSE = "c56417fac7af816d33e8bf8d1b32ac87";
+var KNOWN_RSPAUTH = "453e4559fc8b72ec315876e67270eb38";
+
+var sasl;
+
+function setUp() {
+    sasl = new Md5Sasl(USERNAME, PASSWORD, DOMAIN);
+    
+    // override to return a known string, for testing purposes.
+    sasl._generateCnonce = function() { return KNOWN_CNONCE; };
+}
+
+function tearDown() {
+    sasl = null;
+}
+
+function testSerializeFields() {
+    var actual = sasl.serializeFields( FIELDS_NORMAL );
+    
+    assertEquals( FIELDS_SERIAL, actual );
+}
+
+function testDeserializeFields() {
+    // reserialize rather than compare objects... pervious test shows it
+    // works as expected, so no reason why not.
+    var actual = sasl.serializeFields( sasl.deserializeFields( FIELDS_SERIAL ) );
+    
+    // TODO... check whole object
+    assertEquals( FIELDS_SERIAL, actual );
+}
+
+function testDeserializeFieldsUnquoted() {
+    // reserialize rather than compare objects... pervious test shows it
+    // works as expected, so no reason why not.
+    var actual = sasl.serializeFields( sasl.deserializeFields( FIELDS_SERIAL_UNQUOTED ) );
+    
+    // TODO... check whole object
+    assertEquals( FIELDS_SERIAL, actual );
+}
+
+function testComputeChallengeResponse() {
+    var challenge = binb2b64(str2binb('realm="soashable.com",nonce="2hwJZxrvKJH4apWnxKiKqd3W9nP8XtDVVA6Z0aCQ",qop="auth",charset="utf-8",algorithm="md5-sess"'));
+    
+    var response = sasl.computeChallengeResponse(challenge);
+    
+    var expected = binb2b64(str2binb('username="test2",realm="soashable.com",nonce="2hwJZxrvKJH4apWnxKiKqd3W9nP8XtDVVA6Z0aCQ",cnonce="'+KNOWN_CNONCE+'",nc="00000001",qop="auth",digest-uri="xmpp/soashable.com",response="'+KNOWN_RESPONSE+'",charset="utf-8"'));
+    
+    assertEquals( expected, response );
+}
+
+function testCheckResponseTrue() {
+    var challenge = binb2b64(str2binb('realm="soashable.com",nonce="2hwJZxrvKJH4apWnxKiKqd3W9nP8XtDVVA6Z0aCQ",qop="auth",charset="utf-8",algorithm="md5-sess"'));
+   
+    // since this is a stateful object...
+    sasl.computeChallengeResponse(challenge);
+    
+    var response = binb2b64(str2binb('rspauth='+KNOWN_RSPAUTH+',blah=fsdfs'));
+    
+    assertTrue( sasl.checkResponse(response) );
+    
+}
+
+function testCheckResponseFalse() {
+
+}
+
+        </script>
+    </body>
+</html>

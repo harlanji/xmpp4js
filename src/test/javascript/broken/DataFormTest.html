@@ -1,0 +1,35 @@
+<html>
+    <head>
+        <title>JSUnit - RosterWindowTest</title>
+        <script language="javascript" src="app/jsUnitCore.js"></script>
+        
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+        
+    </head>
+    <body>
+        <script type="text/javascript">
+
+
+var df;
+
+function setUp() {
+    df = new DataForm();
+}
+
+function tearDown() {
+    df = null;
+}
+
+function testSomething() {
+    var node = loadTestPacket( "packets/dataform_get.xml" );
+    
+    df.read( node );
+
+}
+
+        </script>
+    </body>
+</html>
+
+

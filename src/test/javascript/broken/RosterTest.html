@@ -1,0 +1,233 @@
+<html>
+	<head>
+		<title>JSUnit - RosterWindowTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+		
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+		
+	</head>
+	<body>
+		<script type="text/javascript">
+
+var JID1 = "somebody@somewhere.com";
+var ALIAS1 = "alias 1";
+var RESOURCE1 = "resource1";
+
+var JID2 = "somebody2@somewhere.com";
+var ALIAS2 = "alias 2";
+var RESOURCE2 = "resource2";
+
+var GROUPS1 = ["Group 1", "Group 2"];
+var GROUPS2 = ["Group 2", "Group 3"];
+var GROUPS_NONE = [];
+
+
+
+var rim;
+var pm;
+var ri;
+var parentElem;
+
+function setUp() {
+	rim = new Xmpp4Js.Roster.RosterItemManager();
+	pm = new Xmpp4Js.Roster.PresenceManager();
+	parentElem = document.body.appendChild( document.createElement( "div" ) );
+	ri = new Xmpp4Js.UI.Roster.RosterTree( rim, pm, parentElem );	
+}
+
+function tearDown() {
+	rim = null;
+	pm = null;
+	ri = null;
+	parentElem.parentNode.removeChild( parentElem );
+}
+
+
+// =========================================================================
+//       Roster Element functionality
+// =========================================================================
+
+/*
+function testGetGroupNode() {
+
+
+}
+
+function testGetEntryNode() {
+
+}
+*/
+
+function testAddEntryWithGroups() {
+	
+	/*
+	ri.tree.addListener( "append", function( tree, parent, node, index ) {
+			if( node.attributes.cls == "roster_entry" 
+				&& node.attributes.group.name == groupName 
+				&& node.attributes.entry.jid == JID1 ) {
+				
+			}
+	} );
+	*/
+	
+	var entry = rim.update( JID1, ALIAS1, null, null, GROUPS1 );
+	
+	for( var i = 0; i < GROUPS1.length; i++ ) {
+                var groupName = GROUPSi[i];
+		var group = rim.getGroup( groupName );
+		
+		var entryNode = ri._getEntryNode( entry, group );
+		assertNotUndefined( entryNode );
+	};
+
+}
+
+function testAddEntryWithoutGroups() {
+	var entry = rim.update( JID1, ALIAS1, null, null, GROUPS_NONE );
+	var group = rim.getUnfiledContacts();
+	
+	var entryNode = ri._getEntryNode( entry, group );
+	assertNotUndefined( entryNode );
+}
+
+
+
+function testModifyEntryAddGroup() {
+	var entry = rim.update( JID1, ALIAS1, null, null, ["b"] );
+	entry = rim.update( JID1, ALIAS1, null, null, ["b", "c"] );
+	
+	group = rim.getGroup( "b" );
+	entryNode = ri._getEntryNode( entry, group );
+	assertNotUndefined( entryNode );
+	
+	group = rim.getGroup( "c" );
+	entryNode = ri._getEntryNode( entry, group );
+	assertNotUndefined( entryNode );
+}
+
+
+function testModifyEntryRemoveGroup() {
+	var entry = rim.update( JID1, ALIAS1, null, null, ["a", "b"] );
+	entry = rim.update( JID1, ALIAS1, null, null, ["b"] );
+	
+
+	var group = rim.getGroup( "a" );
+	var entryNode = ri._getEntryNode( entry, group );
+	assertUndefined( entryNode );
+
+	var groupNode = ri._getGroupNode( group );
+	assertUndefined( "Expected containing group to be removed when all children are removed.", groupNode );
+	
+	group = rim.getGroup( "b" );
+	entryNode = ri._getEntryNode( entry, group );
+	assertNotUndefined( entryNode );
+}
+
+function testModifyEntryAddAndRemoveGroups() {
+	var entry = rim.update( JID1, ALIAS1, null, null, ["a", "b"] );
+	entry = rim.update( JID1, ALIAS1, null, null, ["b", "c"] );
+	
+
+	var group = rim.getGroup( "a" );
+	var entryNode = ri._getEntryNode( entry, group );
+	assertUndefined( entryNode );
+	
+	group = rim.getGroup( "b" );
+	entryNode = ri._getEntryNode( entry, group );
+	assertNotUndefined( entryNode );
+	
+	group = rim.getGroup( "c" );
+	entryNode = ri._getEntryNode( entry, group );
+	assertNotUndefined( entryNode );
+}
+
+/**
+ * Disabled -- see Issue #21
+ */
+function DISABLED_testModifyEntryNoGroupToGroup() {
+	var entry = rim.update( JID1, ALIAS1, null, null, [] );
+	entry = rim.update( JID1, ALIAS1, null, null, ["a"] );
+	
+	group = rim.getUnfiledContacts();
+	var entryNode = ri._getEntryNode( entry, group );
+	assertUndefined( entryNode );
+
+	var group = rim.getGroup( "a" );
+	var entryNode = ri._getEntryNode( entry, group );
+	assertNotUndefined( entryNode );
+}
+
+function testModifyEntryGroupToNoGroup() {
+	var entry = rim.update( JID1, ALIAS1, null, null, ["a"] );
+	entry = rim.update( JID1, ALIAS1, null, null, [] );
+	
+
+	var group = rim.getGroup( "a" );
+	var entryNode = ri._getEntryNode( entry, group );
+	assertUndefined( entryNode );
+	
+	group = rim.getUnfiledContacts();
+	var entryNode = ri._getEntryNode( entry, group );
+	assertNotUndefined( entryNode );
+}
+
+/**
+ * Disabled -- see Issue #21
+ */
+function DISABLED_testRemoveEntry_InGroup(){
+	var entry = rim.update( JID1, ALIAS1, null, null, ["a"] );
+	rim.remove( JID1 );
+
+	var group = rim.getGroup( "a" );
+	var groupNode = ri._getGroupNode( group );
+	assertUndefined( "Expected containing group to be removed when all children are removed.", groupNode );
+	
+	var entryNode = ri._getEntryNode( entry, group );
+	assertUndefined( entryNode );
+
+	// make sure it's actually gone.
+	group = rim.getUnfiledContacts();
+	var entryNode = ri._getEntryNode( entry, group );
+	assertUndefined( entryNode );
+	
+	
+}
+
+/**
+ * Disabled -- see Issue #21
+ */
+function DISABLED_testRemoveEntry_InNoGroups(){
+	var entry = rim.update( JID1, ALIAS1, null, null, [] );
+	rim.remove( JID1 );
+
+	group = rim.getUnfiledContacts();
+	var entryNode = ri._getEntryNode( entry, group );
+	assertUndefined( entryNode );
+	
+	var groupNode = ri._getGroupNode( group );
+	assertUndefined( "Expected containing group (Unfiled Contacts) to be removed when all children are removed.", groupNode );
+}
+
+function testAddMultipleEntriesToUnfiledContacts() {
+	var entry = rim.update( JID1, ALIAS1, null, null, [], true );
+	var entry2 = rim.update( JID2, ALIAS1, null, null, [], true );
+		
+	group = rim.getUnfiledContacts();
+	
+	var entryNode = ri._getEntryNode( entry, group );
+	assertNotUndefined( entryNode );
+	
+	entryNode = ri._getEntryNode( entry2, group );
+	assertNotUndefined( entryNode );
+}
+
+
+
+		</script>
+	</body>
+</html>
+
+
+
+

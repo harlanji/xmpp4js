@@ -1,0 +1,11 @@
+<body xmlns="http://jabber.org/protocol/httpbind">
+    <presence
+        from='...'
+        to='...'
+        type='error'
+        xmlns="jabber:client">
+        <error code='503' type='wait'>
+            <service-unavailable xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/>
+        </error>
+    </presence>
+</body>

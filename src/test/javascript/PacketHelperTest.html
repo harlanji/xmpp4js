@@ -1,0 +1,154 @@
+<html>
+	<head>
+		<title>JSUnit - RosterWindowTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+		
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+		
+	</head>
+	<body>
+		<script type="text/javascript">
+
+var packetHelper;
+
+function setUp() {
+	packetHelper = new Xmpp4Js.Packet.PacketHelper();
+}
+
+function tearDown() {
+	packetHelper = null;
+}
+
+function testCreatePacket() {
+	var packet = packetHelper.createPacket();
+
+	assertEquals( "body", packet.nodeName );
+	assertEquals( "", packet.getAttribute("sid").toString() );
+	assertEquals( "", packet.getAttribute("rid").toString() );
+	assertEquals( "http://jabber.org/protocol/httpbind", packet.getAttribute("xmlns").toString() );
+}
+
+function testCreateIQ() {
+	var iq = packetHelper.createIQ( "test@test.com", "set", "jabber:iq:roster" );
+
+	assertEquals( "iq", iq.getNode().nodeName );
+	assertEquals( "test@test.com", iq.getTo()  );
+	assertEquals( "set", iq.getType() );
+	assertNotNull( iq.getQuery() );
+	assertNotNull( "query", iq.getQuery().nodeName );
+	assertNotNull( iq.getQuery().getAttribute( "xmlns" ).toString() );
+	assertEquals( "jabber:iq:roster", iq.getQuery().getAttribute( "xmlns" ).toString() );
+	assertEquals( "jabber:iq:roster", iq.getQueryXMLNS() );
+
+}
+
+function testCreateMessageTextBody() {
+	var packet = packetHelper.createMessage( "test@test.com", "normal", "body", "subject" );
+	
+	assertEquals( "message", packet.getNode().nodeName );
+	assertEquals( "test@test.com", packet.getTo()  );
+	assertEquals( "normal", packet.getType() );
+	assertEquals( "body", packet.getBody() );
+	assertEquals( "subject", packet.getSubject() );
+
+}
+
+function testCreateMessageDomBody() {
+	var bodyNode = DomBuilder.node("body", {attrib1: "attrib1 value"}, null, "body");
+	
+	var packet = packetHelper.createMessage( "test@test.com", "normal", bodyNode, "subject" );
+	
+	assertEquals( "message", packet.getNode().nodeName );
+	assertEquals( "test@test.com", packet.getTo()  );
+	assertEquals( "normal", packet.getType() );
+	assertEquals( bodyNode.getStringValue(), packet.getBodyNode().getStringValue() );
+	assertEquals( "subject", packet.getSubject() );
+
+}
+
+function BROKEN_testCreateMessageEmptyBody() {
+	var packet = packetHelper.createMessage( "test@test.com", "normal", null, "subject" );
+	assertTrue( "Message is not considered empty when null", packet.hasContent() );
+         
+        packet = packetHelper.createMessage( "test@test.com", "normal", undefined, "subject" );
+        assertTrue( "Message is not considered empty when undefined", packet.hasContent() );
+        
+        packet = packetHelper.createMessage( "test@test.com", "normal", "", "subject" );
+        assertFalse( "Message is considered empty when empty string", packet.hasContent() );
+        
+        packet = packetHelper.createMessage( "test@test.com", "normal", " ", "subject" );
+        assertFalse( "Message is considered empty when only whitespace", packet.hasContent() );
+
+}
+
+function testCreateMessageSubject() {
+	var packet = packetHelper.createMessage( "test@test.com", "normal", "body", "subject" );
+	assertEquals( "body", packet.getBodyNode().nodeName );
+	assertEquals( "body", packet.getBody()  );
+}
+
+
+function testCreateMessageSubject() {
+	var packet = packetHelper.createMessage( "test@test.com", "normal", "body", "subject" );
+
+	assertEquals( "subject", packet.getSubjectNode().nodeName );
+	assertEquals( "subject", packet.getSubject()  );
+
+}
+
+function testCreateMessageThread() {
+	var packet = packetHelper.createMessage( "test@test.com", "normal", "body", "subject" );
+	packet.setThread( "abc123" );
+
+	assertEquals( "thread", packet.getThreadNode().nodeName );
+	assertEquals( "abc123", packet.getThread()  );
+
+}
+
+function testCreateMessageThread_Multiple() {
+	var packet = packetHelper.createMessage( "test@test.com", "normal", "body", "subject" );
+	packet.setThread( "abc123" );
+	packet.setThread( "thread 2" );
+	
+	assertEquals( "thread 2", packet.getThread()  );
+	assertEquals( 1, packet.getNode().getElementsByTagName("thread" ).getLength() );
+}
+
+function testCreatePresence() {
+	var packet = packetHelper.createPresence( "test@test.com", "available", "status", "normal", "5");
+
+	assertEquals( "presence", packet.getNode().nodeName );
+	assertEquals( "test@test.com", packet.getTo()  );
+	assertEquals( "available", packet.getType() );
+	assertEquals( "status", packet.getStatus() );
+	assertEquals( "normal", packet.getShow() );
+	assertEquals( "5", packet.getPriority() );
+}
+
+function testToFromJid() {
+	var packet = new Xmpp4Js.Packet.Message();
+	var jid = new Xmpp4Js.Jid( "user@im.host.org/resource" );
+	
+	packet.setToJid( jid );
+	packet.setFromJid( jid );
+	
+	var error = "Error setting then getting Jid object.";
+	assertEquals( error,  jid.toString(), packet.getToJid().toString() );
+	assertEquals( error,  jid.toString(), packet.getFromJid().toString() );
+	
+	error = "Error setting Jid object and getting string."
+	assertEquals( error, jid.toString(), packet.getFrom() );
+	assertEquals( error, jid.toString(), packet.getTo() );
+
+}
+
+
+
+
+
+		</script>
+	</body>
+</html>
+
+

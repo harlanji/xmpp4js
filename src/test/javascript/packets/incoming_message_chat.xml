@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<body xmlns="http://jabber.org/protocol/httpbind">
+	<message type="chat"
+		to="harlan@soashable.com/Soashable"
+		from="test@test.com">
+		<thread>threadid</thread>
+		<body>sup man</body>
+	</message>
+</body>

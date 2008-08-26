@@ -1,0 +1,88 @@
+<html>
+	<head>
+		<title>JSUnit - RosterWindowTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+		
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+		
+	</head>
+	<body>
+		<script type="text/javascript">
+
+
+
+
+var packetHelper;
+
+function setUp() {
+	packetHelper = new Xmpp4Js.Packet.PacketHelper();
+}
+function tearDown() {
+	packetHelper = null;
+}
+
+function testRawPacketFilter() {
+	var pf = new Xmpp4Js.PacketFilter.RawPacketFilter();
+	
+	var packet = DomBuilder.node( "body", {xmlns: "http://jabber.org/protocol/httpbind"} );
+	var stanzaNode = packet.getElementsByTagName("iq" ).item(0);
+	
+	// RawPacket filters are special and take packet rather than stanza.
+	var result = pf.accept( packet );
+	assertTrue( result );
+	
+}
+
+function testPacketClassFilter_True() {
+
+	var stanza = packetHelper.createIQ( "test@test.com", "set", "jabber:iq:roster" );
+
+	var pf = new Xmpp4Js.PacketFilter.PacketClassFilter( Xmpp4Js.Packet.IQ );
+	
+	var result = pf.accept( stanza );
+	assertTrue( result );
+}
+
+function testPacketClassFilter_False() {
+	var stanza = packetHelper.createIQ( "test@test.com", "set", "jabber:iq:roster" );
+
+	var pf = new Xmpp4Js.PacketFilter.PacketClassFilter( Xmpp4Js.Packet.Message );
+	
+	var result = pf.accept( stanza );
+	assertFalse( result );
+}
+
+function testPacketIdFilter_True() {
+	
+
+	var stanza = packetHelper.createIQ( "test@test.com", "set", "jabber:iq:roster" );
+	stanza.setId( "a" );
+
+	var pf = new Xmpp4Js.PacketFilter.PacketIdFilter( "a" );
+	
+	var result = pf.accept( stanza );
+	assertTrue( result );
+}
+
+function testPacketIdFilter_False() {
+	var stanza = packetHelper.createIQ( "test@test.com", "set", "jabber:iq:roster" );
+	stanza.setId( "b" );
+	
+	var pf = new Xmpp4Js.PacketFilter.PacketIdFilter( "a" );
+	
+	var result = pf.accept( stanza );
+	assertFalse( result );
+}
+
+// TODO test other filters...
+
+
+
+
+
+		</script>
+	</body>
+</html>
+
+

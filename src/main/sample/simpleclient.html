@@ -1,0 +1,292 @@
+<html>
+    <head>
+        <title>Xmpp4Js Sample Client</title>
+            <script type="text/javascript" src="../lib/prototype.js"> </script> 
+            <script type="text/javascript" src="../lib/extjs2.js"></script>   
+            <script type="text/javascript" src="../lib/dom-all.js"></script>
+            <script type="text/javascript" src="../lib/crypto.js"></script>
+            <script type="text/javascript" src="../lib/xmpp4js.js"></script>
+    </head>
+    
+    <body>
+        <div id="login-panel">
+            <form onsubmit="return client.login(this)">
+                <dl>
+                    <dt>Domain</dt>
+                    <dd><input type="text" name="domain" value="soashable.com"/></dd>
+                    
+                    <dt>Username</dt>
+                    <dd><input type="text" name="username"/></dd>
+                    
+                    <dt>Password</dt>
+                    <dd><input type="password" name="password"/></dd>
+                    
+                    <dt></dt>
+                    <dd><button type="submit">Login</button></dd>
+                </dl>
+            </form>
+        </div>
+        
+        <div id="message-panel">
+            <div id="message-area">
+                
+            </div>
+            <form id="message-form" onsubmit="return client.sendMessage(this)">
+                <dl>
+                    <dt>To</dt>
+                    <dd>
+                        <input type="text" name="to" size="30" value="harlan@soashable.com"/>
+                    </dd>
+                    <dt>Message</dt>
+                    <dd>
+                        <textarea name="message" rows="4" cols="60"></textarea>
+                    </dd>
+                    <dt></dt>
+                    <dd><button type="submit">Send</button></dd>
+                </dl>
+            </form>
+        </div>
+        
+        <div id="control-panel">
+            <button onclick="client.close()">Disconnect.</button>
+        </div>
+        
+        <script type="text/javascript">
+<!--
+function SimpleClient() {
+    /** 
+     * @type Xmpp4Js.Connection
+     */
+    this.con = null;
+}
+
+SimpleClient.prototype = {
+    CHAT_OPTIONS : {
+        ignoreResource: true,
+        ignoreThread: true
+    },
+
+    /**
+     * Connect and set handler that will attempt login
+     */
+    login: function(form) {
+        // set up the connection
+        this.init();
+        
+        // store this for onConnectForLogin
+        this.loginForm = form;
+        
+        // set a listener to call onConnectForLogin once when connected
+        this.con.on("connect", this.onConnectForLogin, this, {single: true} );
+        
+        // actually connec to soashable.com. it doesn't matter what your BOSH
+        // server is.
+        this.con.connect( "soashable.com" );
+        
+        this.logMessage( "Connecting..." );
+        
+        // return false so the form doesn't submit
+        return false;
+    }, 
+    
+    close: function() {
+        this.con.close();
+        
+        // return false so the form doesn't submit
+        return false;
+    },
+
+    sendMessage: function(form) {
+        var to = form.to.value;
+        var messageText = form.message.value;
+        
+        var msgPacket = new Xmpp4Js.Packet.Message( to, "chat", messageText );
+        
+        this.con.send( msgPacket );
+        
+        this.logMessage( this.con.getJid().toString()+": "+messageText, "outgoing-chat" );
+        
+        // return false so the form doesn't submit
+        return false;
+    },
+    
+    /**
+     * Append a message to message-area.
+     */
+    logMessage: function(msg, cssClasses) {
+        var msgArea = Ext.get( "message-area" );
+        
+        this.logMessageTemplate.append( msgArea, {cssClasses: cssClasses, msg: msg} );
+        
+        msgArea.scroll("down", 5000, true);
+    },
+    
+    
+    /**
+     * Initialize the connection
+     *
+     * @private
+     */
+    init: function() {
+        var stanzaProvider = new Xmpp4Js.Packet.StanzaProvider();
+        stanzaProvider.registerDefaultProviders();
+
+        this.con = new Xmpp4Js.Connection({
+            transport: {
+                clazz: Xmpp4Js.Transport.BOSH,
+                endpoint: "/http-bind/" // where your BOSH server is running.
+                // NOTE: same origin policy means you need some sort of proxt, or a servlet.
+            },
+            stanzaProvider: stanzaProvider,
+            listeners: {
+                scope : this,
+                error : this.onError,
+                close : this.onClose
+            }
+        });
+        
+        this.chatManager = Xmpp4Js.Chat.ChatManager.getInstanceFor( this.con );
+        this.chatManager.setOptions(this.CHAT_OPTIONS);
+
+        this.chatManager.on({
+            scope : this,
+            chatStarted : this.onChatStarted,
+            messageReceived : this.onChatMessageReceived
+        });
+    },
+    
+    /**
+     * This is called when we connect. It performs a login.
+     * @private
+     */
+    onConnectForLogin: function() {
+        var domain = this.loginForm.domain.value;
+        var username = this.loginForm.username.value;
+        var password = this.loginForm.password.value;
+
+        // start the login flow
+        var loginFlow = new Xmpp4Js.Workflow.Login({
+            con: this.con,
+            listeners: {
+                scope: this,
+                success: this.onLoginCompleted,
+                failure: this.onAuthError
+            }
+        });
+
+        this.logMessage( "Loggin in..." );
+
+        var type = username ? "plaintext" : "anon";
+        loginFlow.start( type, username, password );
+    },
+    
+    /**
+     * We're now authenticated
+     * @private
+     */
+    onLoginCompleted : function() {
+        
+        // send the initial presence packet.
+        this.con.send(this.con.getPacketHelper().createPresence());
+        
+        this.logMessage( "Logged in.", "login-success" );
+        
+        document.getElementById( "login-panel" ).style.display = "none";
+        document.getElementById( "message-form" ).style.display = "block";
+        document.getElementById( "control-panel" ).style.display = "block";
+    },
+    
+    /**
+     * 
+     * @private
+     */
+    onAuthError: function() {
+        this.logMessage( "There was authentication error. Try again.", "error" );
+    },
+    
+    /**
+     * @private
+     */
+    onError : function( isTerminal, packetNode, title, message ) {
+        this.logMessage( "There was an error(fatal="+isTerminal+"): "+message, "error" );
+    },
+    
+    /**
+     * 
+     * @private
+     */
+    onClose : function( con ) {
+        this.logMessage( "Connection to "+this.con.domain+" closed." );
+        
+        document.getElementById( "login-panel" ).style.display = "block";
+        document.getElementById( "message-form" ).style.display = "none";
+        document.getElementById( "control-panel" ).style.display = "none";
+        
+        // clean house.
+        delete this.con;
+    },
+    
+    /**
+     * 
+     * @private
+     */
+    onChatStarted : function(chat) {
+        this.logMessage( "Chat with " + chat.getParticipant().toString() + " started", "chat-started" );
+    },
+    
+    /**
+     * 
+     * @private
+     */
+    onChatMessageReceived : function(chat, messagePacket) {
+        if( messagePacket.hasContent() ) {
+            this.logMessage( messagePacket.getFrom() + ": " + messagePacket.getBody(), "incoming-chat" );
+        } 
+        
+        // else, some extension sending a message.
+    },
+    
+    /**
+     * The template to use for log messages.
+     * @private
+     */
+    logMessageTemplate: new Ext.Template( "<div class='message {cssClasses}'>{msg}</div>" )
+}
+
+var client = null;
+Ext.onReady(function() {
+    client = new SimpleClient();
+
+    if( !Ext.isOpera && !Ext.isGecko && !Ext.isIE7 && !Ext.isSafari ) {
+        client.logMessage( "You're using an untested browser. Please let me know how it goes. <a href='mailto:h.iverson@gmail.com'>h.iverson@gmail.com</a>" );
+    }
+
+    client.logMessage( "Client ready." );
+});
+
+-->
+        </script>
+        <style type="text/css">
+<!--
+
+#message-area {
+    height: 15em;
+    width: 50em;
+    overflow: auto;
+    scoll: auto;
+    
+}
+
+#message-form {
+   display: none; 
+}
+
+#control-panel {
+    display: none;
+}
+
+-->
+        </style>
+        
+    </body>
+</html>

@@ -1,0 +1,5 @@
+<body xmlns="http://jabber.org/protocol/httpbind">
+    <presence xmlns="jabber:client" from="soashable@conference.soashable.com/harlan2" id="..." to="harlan2@soashable.com/Soashable"><x xmlns="http://jabber.org/protocol/muc#user">
+            <item affiliation="owner" jid="harlan2@soashable.com/Soashable" role="moderator"/><status code="201"/>
+        </x></presence>
+</body>

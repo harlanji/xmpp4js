@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<presence xmlns="jabber:client" from="aimbuddy123@aim.soashable.com"
+    to="d471a638@soashable.com" type="subscribe">
+    <x xmlns="http://jabber.org/protocol/roster-subsync">
+        <item name="aimbuddy123" subscription="both" />
+    </x>
+</presence>

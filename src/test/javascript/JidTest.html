@@ -1,0 +1,123 @@
+<html>
+	<head>
+		<title>JSUnit - JidTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+
+	</head>
+	<body>
+		<script type="text/javascript">
+
+var JID1 = "jid1@test.com";
+var JID2 = "jid2@test.com";
+
+var JID1_WITH_RESOURCE = JID1 + "/resource";
+
+function testConstructor_String() {
+	var jid = new Xmpp4Js.Jid( JID1 );
+}
+
+function testConstructor_Jid() {
+	var jid1 = new Xmpp4Js.Jid( JID1 );
+	var jid2 = new Xmpp4Js.Jid( new Xmpp4Js.Jid(JID1) );
+
+	assertTrue( jid1.equals( jid2 ) );
+}
+
+
+function testValidJid() {
+	var error = "Error parsing domain from bare jid";
+	assertEquals(error, "im.host.org", new Xmpp4Js.Jid("im.host.org").getDomain());
+	assertEquals(error, "im.host.org", new Xmpp4Js.Jid("im.host.org/resource").getDomain());
+	
+	error = "Error parsing user name from bare jid"
+	assertEquals(error, "", new Xmpp4Js.Jid("yahoo.myjabber.net").getNode());
+	assertEquals(error, "", new Xmpp4Js.Jid("yahoo.myjabber.net/registred").getNode());
+	
+	error = "Error parsing domain from jid";
+	assertEquals(error, "im.host.org", new Xmpp4Js.Jid("user@im.host.org/resource").getDomain());
+	assertEquals(error, "im.host.org", new Xmpp4Js.Jid("user@im.host.org").getDomain());
+	
+	error = "Error parsing user name from jid";
+	assertEquals(error, "user", new Xmpp4Js.Jid("user@yahoo.myjabber.net/registred").getNode());
+	assertEquals(error, "user", new Xmpp4Js.Jid("user@yahoo.myjabber.net").getNode());
+	
+	error = "Error parsing resource from jid";
+	assertEquals(error, "resource", new Xmpp4Js.Jid("user@im.host.org/resource").getResource());
+	assertEquals(error, "", new Xmpp4Js.Jid("user@im.host.org").getResource());
+	
+	error = "Error parsing resource from bare jid";
+	assertEquals(error, "resource", new Xmpp4Js.Jid("im.host.org/resource").getResource());
+	assertEquals(error, "", new Xmpp4Js.Jid("im.host.org").getResource());
+}
+
+
+function testToString_HostOnly() {
+	var jidString = "im.host.org";
+
+	var jid = new Xmpp4Js.Jid( jidString );
+	assertEquals( jidString, jid.toString() );	
+}
+
+function testToString_NodeHost() {
+	var jidString = "user@im.host.org";
+	
+	var jid = new Xmpp4Js.Jid( jidString );
+	assertEquals( jidString, jid.toString() );
+}
+
+function testToString_NodeHostResource() {
+	var jidString = "user@im.host.org/resource";
+	var jid = new Xmpp4Js.Jid( jidString );
+	assertEquals( jidString, jid.toString() );
+}
+
+function testEquals() {
+	var jid1 = new Xmpp4Js.Jid( JID1 );
+	var jid2 = new Xmpp4Js.Jid( JID2 );
+
+	assertTrue( jid1.equals( jid1 ) );
+	assertFalse( jid1.equals( jid2 ) );
+}
+
+function testRemoveResource() {
+	var jid1 = new Xmpp4Js.Jid( JID1_WITH_RESOURCE );
+	var jid2 = jid1.removeResource();
+	
+	assertEquals( jid1, jid2 );
+	assertEquals( '', jid1.getResource() );
+	assertEquals( '', jid2.getResource() );
+}
+
+function testWithoutResource() {
+	var jid1 = new Xmpp4Js.Jid( JID1_WITH_RESOURCE );
+	var jid2 = jid1.withoutResource();
+	
+	assertNotEquals( jid1.toString(), jid2.toString() );
+	assertNotEquals( '', jid1.getResource() );
+	assertEquals( '', jid2.getResource() );
+}
+
+function testEquals_WithoutResource() {
+	var jid1 = new Xmpp4Js.Jid( JID1_WITH_RESOURCE );
+	var jid2 = new Xmpp4Js.Jid( JID2 );
+
+	assertTrue( jid1.equals( jid1, true ) );
+	assertFalse( jid1.equals( jid2, true ) );
+}
+
+function testEquals_Case() {
+	var jid1 = new Xmpp4Js.Jid( JID1 );
+	var jid2 = new Xmpp4Js.Jid( JID1.toUpperCase() );
+
+	assertTrue( jid1.equals( jid1 ) );
+}
+		</script>
+	</body>
+</html>
+
+
+
+

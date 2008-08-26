@@ -1,0 +1,347 @@
+<html>
+    <head>
+        <title>JSUnit - RosterWindowTest</title>
+        <script language="javascript" src="app/jsUnitCore.js"></script>
+        
+                <script type="text/javascript" src="includes.js"></script>
+        <script type="text/javascript" src="common-test-library.js"></script>
+        
+    </head>
+    <body>
+        <script type="text/javascript">
+
+var JID1 = "somebody@somewhere.com";
+var ALIAS1 = "resource1";
+var GROUPS1 = ["Group 1", "Group 2"];
+
+var JID2 = "somebody2@somewhere.com";
+var ALIAS2 = "resource2";
+
+
+var GROUPS_NONE = [];
+
+
+var PRIORITY_HIGH= 5;
+var PRIORITY_LOW = 1;
+
+var rim;
+
+function setUp() {
+    rim = new Xmpp4Js.Roster.RosterItemManager();
+}
+
+function tearDown() {
+    rim = null;
+}
+
+function testAddEntry() {
+    rim.update( JID1, ALIAS1, null, null, GROUPS1 );
+    
+    var entry = rim.get( JID1 );
+    assertNotUndefined(entry);
+    assertEquals( JID1, entry.jid );
+}
+
+/**
+ * Ensure that JIDs are retreivable both with and without 
+ * resources.
+ */
+function testUpdate_IgnoresResource() {
+    rim.update( JID1 + "/resource", ALIAS1, null, null, GROUPS1 );
+    rim.update( JID1 + "/resource2", ALIAS1, null, null, GROUPS1 );
+    
+    // make sure we can get the entry with resource
+    // but that it actually doesn't contain it when returned.
+    var entry = rim.get( JID1 + "/resource" );
+    assertNotUndefined(entry);
+    assertEquals( JID1, entry.jid );
+    
+    // make sure we can get the entry without resource
+    var entry = rim.get( JID1 );
+    assertNotUndefined(entry);
+    assertEquals( JID1, entry.jid );
+}
+
+function testGetGroups() {
+    rim.update( JID1, ALIAS1, null, null, GROUPS1 );
+    
+    var groups = rim.getGroups();
+    // +1 for unfiled entries
+    assertEquals( GROUPS1.length + 1, groups.length );
+}
+
+function testGetGroup() {
+    rim.update( JID1, ALIAS1, null, null, GROUPS1 );
+    
+    for(var i = 0; i < GROUPS1.length; i++) {
+        var groupName = GROUPS1[i];
+        assertNotUndefined( rim.getGroup( groupName ) );
+    };
+}
+
+function testGetGroupsFromEntry() {
+    rim.update( JID1, ALIAS1, null, null, GROUPS1 );
+
+    var entry = rim.get( JID1 );
+    var groups = entry.getGroups();
+    
+    assertNotUndefined( groups );
+    assertEquals( GROUPS1.length, groups.length );
+    
+    /* TODO compare group names
+
+    */
+}
+
+function testGetEntryFromGroup() {
+    rim.update( JID1, ALIAS1, null, null, GROUPS1 );
+    
+    for(var i = 0; i < GROUPS1.length; i++) {
+        var groupName = GROUPS1[i];
+        var group = rim.getGroup( groupName );
+        var entry = group.getEntry( JID1 );
+        assertNotUndefined( entry );
+        assertEquals( JID1, entry.jid );
+    };
+}
+
+function testAddEntryNoGroup() {
+    rim.update( JID1, ALIAS1, null, null, GROUPS_NONE );
+    
+    var entry = rim.get( JID1 );
+    assertNotUndefined(entry);
+    assertEquals( JID1, entry.jid );
+}
+
+function testGetUnfiledContactsGroup() {
+    rim.update( JID1, ALIAS1, null, null, GROUPS_NONE );
+
+    var group = rim.getUnfiledContacts();
+    assertNotUndefined(group);
+}
+
+function BROKEN_testGetEntryFromUnfiledContactsGroup() {
+    rim.update( JID1, ALIAS1, null, null, GROUPS_NONE );
+
+    var group = rim.getUnfiledContacts();
+    var entry = group.getEntry( JID1 );
+    
+    assertNotUndefined(entry);
+    assertEquals( JID1, entry.jid );
+}
+
+function BROKEN_testAddMultipleEntriesUnfiledContactsGroup() {
+    rim.update( JID1, ALIAS1, null, null, GROUPS_NONE );
+    rim.update( JID2, ALIAS2, null, null, GROUPS_NONE );
+    
+    var group = rim.getUnfiledContacts();
+    
+    var entry = group.getEntry( JID1 );
+    assertNotUndefined(entry);
+    assertEquals( JID1, entry.jid );
+    
+    entry = group.getEntry( JID2 );
+    assertNotUndefined(entry);
+    assertEquals( JID2, entry.jid );
+}
+
+// TODO in the future do we want UnfiledContactsGroup to come back?
+function testGetGroupsFromUnfiledEntry() {
+    rim.update( JID1, ALIAS1, null, null, GROUPS_NONE );
+
+    var entry = rim.get( JID1 );
+    var groups = entry.getGroups();
+
+    assertNotUndefined( groups );
+    assertEquals( 1, groups.length );
+    assertTrue ( groups[0] instanceof Xmpp4Js.Roster.UnfiledEntriesRosterGroup );
+}
+
+function testRemoveEntry() {
+    rim.update( JID1, ALIAS1, null, null, GROUPS1 );
+    
+    rim.remove( JID1 );
+    
+    var entry = rim.get( JID1 );
+    assertUndefined(entry);
+
+    for(var i = 0; i < GROUPS1.length; i++) {
+        var groupName = GROUPS1[i];
+        assertUndefined( rim.getGroup( groupName) );
+    };
+}
+
+
+function testEventAddEntry() {
+    
+    var addCount = 0, updateCount = 0; removeCount = 0;
+    rim.on({
+        add: function(entry) {
+            addCount++;
+            assertEquals(JID1, entry.jid );
+        },
+        update: function(oldEntry, entry) {
+            updateCount++;
+        },
+        remove: function(entry) {
+            removeCount++;
+        }
+    });
+    
+    rim.update( JID1, ALIAS1, null, null, GROUPS1 );
+
+    assertEquals( 1, addCount );
+}
+
+function testEventUpdateEntry() {
+
+    rim.update( JID1, ALIAS1, null, null, GROUPS1 );    
+
+    var addCount = 0, updateCount = 0; removeCount = 0;
+    rim.on({
+        add: function(entry) {
+            addCount++;
+        },
+        update: function(oldEntry, entry) {
+            updateCount++;
+            assertEquals(JID1, oldEntry.jid );
+            assertEquals(JID1, entry.jid );
+        },
+        remove: function(entry) {
+            removeCount++;
+        }
+    });
+    
+    rim.update( JID1, ALIAS1, null, null, GROUPS1 );        
+
+    assertEquals( 1, updateCount );
+}
+
+function testEventDeleteEntry() {
+    rim.update( JID1, ALIAS1, null, null, GROUPS1 );    
+
+    var addCount = 0, updateCount = 0; removeCount = 0;
+    rim.on({
+        add: function(entry) {
+            addCount++;
+        },
+        update: function(oldEntry, entry) {
+            updateCount++;
+        },
+        remove: function(entry) {
+            removeCount++;
+            assertEquals(JID1, entry.jid );
+        }
+    });    
+    rim.remove( JID1 );        
+
+    assertEquals( 1, removeCount );
+}
+
+function testPacketListener() {
+    var provider = new Xmpp4Js.Packet.StanzaProvider();
+    provider.registerDefaultProviders();
+
+    var bodyElement = loadTestPacket( "packets/iq_roster_result.xml" );
+    var iq = provider.fromNode( bodyElement.getElementsByTagName("iq").item(0) );
+
+    rim.rosterPacketListener( iq );
+    
+    var entry = rim.get( "matt@soashable.com" );
+
+    assertNotUndefined( entry );
+    assertEquals( "matt@soashable.com", entry.jid );
+}
+
+function testSubSyncPacketListener() {
+    var provider = new Xmpp4Js.Packet.StanzaProvider();
+    provider.registerDefaultProviders();
+
+    var packet = loadTestPacket( "packets/roster-subsync.xml" );
+    var presence = provider.fromNode( packet );
+
+    rim.rosterSubSyncPacketListener( presence );
+    
+    var entry = rim.get( "aimbuddy123@aim.soashable.com" );
+
+    assertNotUndefined( entry );
+    assertEquals( "aimbuddy123@aim.soashable.com", entry.jid );
+}
+
+function OBSOLETE_testEventDeferredAddEntry() {
+    var wasEventCorrect = false;
+    var numberTimesCalls = 0;
+    
+    rim.addRosterListener( function(addedEntries, updatedEntries, deletedEntries) {
+        wasEventCorrect = addedEntries.length == 2 
+            && updatedEntries.length == 0 
+            && deletedEntries.length == 0;
+        numberTimesCalls++;
+    });
+    
+    rim.update( JID1, ALIAS1, null, null, GROUPS1, true );
+    rim.update( JID2, ALIAS2, null, null, GROUPS1, true );
+    
+    rim.fireRosterChangedEvent();
+    
+    assertEquals( 1, numberTimesCalls );
+    assertTrue( wasEventCorrect );
+}
+
+function OBSOLETE_testEventDeferredUpdateEntry() {
+    var wasEventCorrect = false;
+    var numberTimesCalls = 0;
+    
+    rim.update( JID1, ALIAS1, null, null, GROUPS1 );
+    rim.update( JID2, ALIAS1, null, null, GROUPS1 );    
+
+    rim.addRosterListener( function(addedEntries, updatedEntries, deletedEntries) {
+        wasEventCorrect = updatedEntries.length == 2 
+            && addedEntries.length == 0 
+            && deletedEntries.length == 0;
+        numberTimesCalls++;
+    });
+    
+    rim.update( JID1, ALIAS2, null, null, GROUPS1, true );        
+    rim.update( JID2, ALIAS2, null, null, GROUPS1, true );
+    
+    rim.fireRosterChangedEvent();
+    
+    assertEquals( 1, numberTimesCalls );
+    assertTrue( wasEventCorrect );
+}
+
+function OBSOLETE_testEventDeferredDeleteEntry() {
+    var wasEventCorrect = false;
+    var numberTimesCalls = 0;
+    
+    rim.update( JID1, ALIAS1, null, null, GROUPS1 );    
+    rim.update( JID2, ALIAS1, null, null, GROUPS1 );    
+
+    rim.addRosterListener( function(addedEntries, updatedEntries, deletedEntries) {
+        wasEventCorrect = deletedEntries.length == 2 
+            && addedEntries.length == 0 
+            && updatedEntries.length == 0;
+        numberTimesCalls++;
+    });
+    
+    rim.remove( JID1, true );        
+    rim.remove( JID2, true );        
+    
+    rim.fireRosterChangedEvent();
+    
+    assertEquals( 1, numberTimesCalls );
+    assertTrue( wasEventCorrect );
+}
+
+// TODO test packet listeners.
+
+
+        </script>
+    </body>
+</html>
+
+
+
+
+1

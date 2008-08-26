@@ -1,0 +1,91 @@
+<html>
+    <head>
+        <title>JSUnit - RosterWindowTest</title>
+        <script language="javascript" src="app/jsUnitCore.js"></script>
+        
+        <script type="text/javascript" src="includes.js"></script>
+        <script type="text/javascript" src="common-test-library.js"></script>
+        
+    </head>
+    <body>
+        <script type="text/javascript">
+
+
+
+
+
+function setUp() {
+
+}
+function tearDown() {
+
+}
+
+function testBind() {
+    var expectedThis = {testProperty: "abc123"};
+    var actualThis = null;
+    var fn = function() {
+        actualThis = this;
+    }
+    
+    var boundFn = Xmpp4Js.Lang.bind( fn, expectedThis );
+    boundFn();
+    
+    assertEquals( "Scope was no correct.", expectedThis, actualThis );
+    assertEquals( "Scope was no correct.", expectedThis.testProperty, actualThis.testProperty );
+}
+
+function testBindArguments() {
+    var expectedThis = {testProperty: "abc123"};
+    var actualThis = null;
+    var fn = function(arg1, arg2) {
+        actualThis = this;
+        assertEquals( "123", arg1 );
+        assertEquals( "456", arg2 );
+    }
+    
+    var boundFn = Xmpp4Js.Lang.bind( fn, expectedThis, "123" );
+    boundFn("456");
+    
+    assertEquals( "Scope was no correct.", expectedThis, actualThis );
+    assertEquals( "Scope was no correct.", expectedThis.testProperty, actualThis.testProperty );
+}
+    
+// temporary, will go away when all instances of .bind() are removed
+function testFunctionPrototypeBind() {
+    var expectedThis = {testProperty: "abc123"};
+    var actualThis = null;
+    var fn = function() {
+        actualThis = this;
+    }
+    
+    var boundFn = fn.bind( expectedThis );
+    boundFn();
+    
+    assertEquals( "Scope was no correct.", expectedThis, actualThis );
+    assertEquals( "Scope was no correct.", expectedThis.testProperty, actualThis.testProperty );
+}
+    
+// temporary, will go away when all instances of .bind() are removed
+function FunctionPrototypeBindArguments() {
+    var expectedThis = {testProperty: "abc123"};
+    var actualThis = null;
+    var fn = function(arg1, arg2) {
+        actualThis = this;
+        assertEquals( "123", arg1 );
+        assertEquals( "456", arg2 );
+    }
+    
+    var boundFn = fn.bind( expectedThis, "123" );
+    boundFn("456");
+    
+    assertEquals( "Scope was no correct.", expectedThis, actualThis );
+    assertEquals( "Scope was no correct.", expectedThis.testProperty, actualThis.testProperty );
+}
+
+
+        </script>
+    </body>
+</html>
+
+

@@ -1,0 +1,80 @@
+<document>
+  <properties>
+    <author email="h.iverson@gmail.com">Harlan Iverson</author>
+    <title>Extension Support</title>
+  </properties>
+
+  <body>
+      
+      <section name="Extension Support">
+          <table>
+              <thead>
+                  <tr>
+                      
+                      <th>Extension</th>
+                      <th>Supported?</th>
+                      <th>Validated?</th>
+                  </tr>
+              </thead>
+              <tbody>
+
+
+                  <tr>
+                      <td><a href="http://www.xmpp.org/extensions/xep-0004.html">XEP-0004: Data Forms</a></td>
+                      <td>Yes</td>
+                      <td>No</td>
+                  </tr>
+                  <tr>
+                      <td><a href="http://www.xmpp.org/extensions/xep-0030.html">XEP-0030: Service Discovery</a></td>
+                      <td>Yes</td>
+                      <td>No</td>
+                  </tr>
+                  <tr>
+                      <td><a href="http://www.xmpp.org/extensions/xep-0045.html">XEP-0045: Multi-User Chat</a></td>
+                      <td><a href="http://code.google.com/p/soashable/issues/detail?id=4">Planned</a></td>
+                      <td></td>
+                  </tr>
+                  <tr>
+                      <td><a href="http://www.xmpp.org/extensions/xep-0049.html">XEP-0049: Private XML Storage</a></td>
+                      <td>Yes</td>
+                      <td>No</td>
+                  </tr>
+                  <tr>
+                      <td><a href="http://www.xmpp.org/extensions/xep-0060.html">XEP-0060: Publish-Subscribe</a></td>
+                      <td><a href="http://code.google.com/p/soashable/issues/detail?id=69">Planned</a></td>
+                      <td></td>
+                  </tr>
+                  <tr>
+                      <td><a href="http://www.xmpp.org/extensions/xep-0077.html">XEP-0077: In-Band Registration</a></td>
+                      <td>Yes</td>
+                      <td>No</td>
+                  </tr>
+
+                  <tr>
+                      <td><a href="http://www.xmpp.org/extensions/xep-0085.html">XEP-0085: Chat State Notifications</a></td>
+                      <td>Yes</td>
+                      <td>No</td>
+                  </tr>
+                  <tr>
+                      <td><a href="http://www.xmpp.org/extensions/xep-0100.html">XEP-0100: Gateway Interaction</a></td>
+                      <td>Yes</td>
+                      <td>No</td>
+                  </tr>
+                  <tr>
+                      <td><a href="http://www.xmpp.org/extensions/xep-0124.html">XEP-0124: Bidirectional-streams Over Synchronous HTTP (BOSH)</a></td>
+                      <td>Yes</td>
+                      <td>No</td>
+                  </tr>
+
+                  <tr>
+                      <td><a href="http://www.xmpp.org/extensions/xep-0163.html">XEP-0163: Personal Eventing via Pubsub</a></td>
+                      <td><a href="http://code.google.com/p/soashable/issues/detail?id=69">Planned</a></td>
+                      <td></td>
+                  </tr>
+              </tbody>
+          </table>
+ 
+      </section>
+
+  </body>
+</document>

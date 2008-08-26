@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<body xmlns="http://jabber.org/protocol/httpbind">
+	<iq type="result"
+		to="harlan@soashable.com/Soashable">
+		<query xmlns="jabber:iq:roster">
+			<item jid="matt@soashable.com" name="matt"
+				subscription="both">
+				<group>Test 2</group>
+			</item>
+			<item jid="clayton@soashable.com" subscription="both">
+				<group>Test</group>
+			</item>
+			<item jid="stephen@soashable.com" ask="subscribe"
+				subscription="none">
+				<group>Test</group>
+			</item>
+		</query>
+	</iq>
+</body>

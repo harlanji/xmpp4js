@@ -1,0 +1,114 @@
+<html>
+	<head>
+		<title>JSUnit - RosterWindowTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+		
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+		
+	</head>
+	<body>
+		<script type="text/javascript">
+
+var dm;
+
+function setUp() {
+	dm = new DelegateManager();
+}
+
+function tearDown() {
+	dm = null;
+}
+
+
+function testAddDelegate_One() {
+	var execCount = 0;
+	var method = function() {
+		execCount++;
+	};
+	
+	dm.add(method);
+	
+	dm.fire();
+	
+	assertEquals( 1, execCount );
+}
+
+function testAddDelegate_One_Scope() {
+    
+        var expectedScope = {
+            field: "abc123"
+        }
+	var actualScope;
+        
+	var method = function() {
+		actualScope = this;
+	}.bind(expectedScope);
+	
+	dm.add(method);
+	
+	dm.fire();
+	
+	assertEquals( "Scope did not match", expectedScope, actualScope );
+}
+
+function testAddDelegate_Many() {
+	var execCount = 0;
+	
+	var method = function() {
+		execCount++;
+	};
+	
+	dm.add(method);
+	dm.add(method);
+	dm.add(method);
+	
+	dm.fire();
+	
+	assertEquals( 3, execCount );
+}
+
+function testArguments() {
+	
+	var arg1 = 123;
+	var arg2 = "abc";
+	var firedArg1 = undefined;
+	var firedArg2 = undefined;
+	
+	var method = function(arg1, arg2) {
+		firedArg1 = arg1;
+		firedArg2 = arg2;
+	};
+	
+	dm.add(method);
+	
+	dm.fire(arg1, arg2);
+	
+	assertEquals( arg1, firedArg1 );
+	assertEquals( arg2, firedArg2 );
+}
+
+function testRemoveDelegate() {
+	
+	var execCount = 0;
+	var method = function(arg1, arg2) {
+		execCount++;
+	};
+	
+	var id1 = dm.add(method);
+	var id2 = dm.add(method);
+	
+	dm.remove(id1);
+	
+	dm.fire();
+	
+	assertEquals(1, execCount);
+}
+
+		</script>
+	</body>
+</html>
+
+
+
+

@@ -1,0 +1,343 @@
+<document>
+  <properties>
+    <author email="h.iverson@gmail.com">Harlan Iverson</author>
+    <title>Code Samples</title>
+  </properties>
+
+  <body>
+      
+      <section name="Information">
+          <p>In addition to these snippets, check out the SimpleClient demo in 
+          the <a href="https://xmpp4js.svn.sourceforge.net/svnroot/xmpp4js/xmpp4js-launcher/">xmpp4js-launcher</a> project.</p>
+          
+          
+      </section>
+      
+    <!-- The body of the document contains a number of sections -->
+    <section name="Core">
+
+
+<subsection name="Create a connection">
+<pre name="code" class="javascript"><![CDATA[
+var con = new JabberConnection( "/http-bind/", "soashable.com" );
+con.beginSession();
+]]></pre>
+</subsection>
+
+<subsection name="Close a connection">
+<pre name="code" class="javascript"><![CDATA[
+con.endSession();
+]]></pre>
+</subsection>
+
+<subsection name="Login">
+<pre name="code" class="javascript"><![CDATA[
+con.authenticateMd5( "username", "password", "resource" );
+]]></pre>
+</subsection>
+
+<subsection name="Register">
+<pre name="code" class="javascript"><![CDATA[
+var reg = new Packet.Registration();
+reg.setNode( "myjid" );
+reg.setPassword( "mypass" );
+reg.setEmail( "somebody@somewhere.com" );
+reg.setName( "My Name" );
+
+con.send( reg );
+]]></pre>
+</subsection>
+
+<subsection name="Send an IM">
+<pre name="code" class="javascript"><![CDATA[
+var msg = new Packet.Message("somebody@somewhere.com", "hello");
+con.send( msg );
+]]></pre>
+</subsection>
+
+<subsection name="Use Chat Manager">
+<pre name="code" class="javascript"><![CDATA[
+var cm = Xmpp4Js.Chat.ChatManager.getInstanceFor( con );
+
+cm.setOptions({
+    ignoreThread: true, // useful for legacy networks (AIM)
+    ignoreResource: true 
+});
+
+cm.on({
+    scope : this,
+    chatStarted : onChatStarted,
+    messageReceived : onChatMessageReceived
+});
+
+function onChatStarted(chat) {
+    alert( "Chat with "+chat.getParticipant()+" started." );
+}
+
+function onChatMessageReceived(chat, messagePacket) {
+    alert( "New message from "+messagePacket.getFrom()+": "+messagePacket.getBody() );
+}
+
+function sendMessage(to, message) {
+    var chat = null;
+    try {
+        chat = chatManager.findBestChat( to );
+    } catch(e) {
+        chat = chatManager.createChat( to );
+    }
+    
+    var messagePacket = new Xmpp4Js.Packet.Message( to, "normal", message );
+    chat.sendMessage( messagePacket );
+}
+
+]]></pre>
+</subsection>
+
+
+<subsection name="Pause / Resume a connection">
+<pre name="code" class="javascript"><![CDATA[
+
+// this assumes ExtJs is present for the state manager. what 
+// actually needs to happen is an x-domain state manager needs
+// to be implemented so that state can carry across domains.
+
+// setup
+LOGIN = "test";
+PASSWORD = "test";
+SEND_MSG_TO = "harlan@soashable.com";
+BOSH_TRANSPORT = Xmpp4Js.Transport.Script;
+BOSH_ENDPOINT = "http://bosh*.soashable.com:7070/http-bind/";
+
+Ext.state.Manager.setProvider( new Ext.state.CookieProvider() );
+
+// 1, 4
+sp = new Xmpp4Js.Packet.StanzaProvider();
+sp.registerDefaultProviders();
+con = new Xmpp4Js.Connection({transport: {clazz: BOSH_TRANSPORT,endpoint:BOSH_ENDPOINT,useKeys:true},stanzaProvider:sp});
+con.on( "pause", function(pauseStruct) { 
+  console.dir( pauseStruct ); 
+  Ext.state.Manager.set( "pauseStruct", pauseStruct );
+});
+con.on( "resume", function(pauseStruct) {
+  con.send( new Xmpp4Js.Packet.Message( SEND_MSG_TO, "normal", "yoooo I'm alive" ) );
+});
+con.on( "connect", function() { 
+  loginFlow = new Xmpp4Js.Workflow.Login({con:con});
+  loginFlow.on("success", function() {
+    con.send( new Xmpp4Js.Packet.Presence() );
+  } );
+  loginFlow.start( "plaintext", LOGIN, PASSWORD );
+});
+
+// 2
+con.connect("soashable.com");
+
+// 3 - pause for up to 120 seconds. at this point you can reload the page.
+con.pause( 120 );
+
+// 5 - you should receive an IM
+ps = Ext.state.Manager.get( "pauseStruct" );
+con.resume( ps );
+    
+]]></pre>
+</subsection>
+
+
+
+    </section>
+    <section name="Privacy, Presence">
+
+
+<subsection name="Change my presence">
+<pre name="code" class="javascript"><![CDATA[
+var pres = new Packet.Presence( "available", "dnd" );
+]]></pre>
+</subsection>
+
+<subsection name="Change my presence for only a specific buddy">
+<pre name="code" class="javascript"><![CDATA[
+var pres = new Packet.Presence( "available", "dnd" );
+pres.setTo( "buddy@soashable.com" );
+]]></pre>
+</subsection>
+        
+<subsection name="Capture others' presence">
+<pre name="code" class="javascript"><![CDATA[
+con.addPacketListener( function(presence) {
+    var from = presence.getFrom();
+    var type = presence.getType();
+    var status = presence.getStatus();
+    var awayMsg = presence.getShow();
+    if( type == "available" ) {
+      alert( from + " is " + status + "; show=" + awayMsg );
+    } else {
+      alert( from + " is offline." );
+    }
+}, new PacketClassFilter( Packet.Presence ) );
+]]></pre>
+</subsection>
+
+<subsection name="Add a buddy">
+<pre name="code" class="javascript"><![CDATA[
+var roster = con.getRoster();
+roster.createEntry( "mybuddy@soashable.com", "My Buddy", ["group a", "group b"] );
+]]></pre>
+</subsection>
+
+<subsection name="Remove a buddy">
+<p>... there is no way right now. ouch...</p>
+</subsection>
+
+<subsection name="Confirm/Deny a request to be added as a buddy">
+<pre name="code" class="javascript"><![CDATA[
+con.addPacketListener( function(presence) {
+    if( presence.getType() == "subscribe" ) {
+      var allowed = confirm( "Do you want to let " + presence.getTo() + " subscribe to your presence?");
+      var outPres = new Packet.Presence( "subscribed" );
+      outPres.setTo( presence.getFrom() );
+      con.send( outPres );
+    }
+}, new PacketClassFilter( Packet.Presence ) );
+]]></pre>
+</subsection>
+
+    </section>
+    <section name="Events, Listeners">
+
+<subsection name="Be notified of message events (composing) ">
+<pre name="code" class="javascript"><![CDATA[
+con.addPacketListener(
+    function(msg) {
+      // load extensions that are present in the packet using our ExtensionProvider
+      msg.loadExtensions(extensionProvider);
+
+      var msgEvent = msg.getExtension( MessageEventExtension.XMLNS );
+      alert( "Message Event: " + msg.getTo() + " - " + msgEvent .getEvent() );
+
+    }, 
+    // capture only Message packets with MessageEventExtension
+    new AndFilter(
+      new PacketClassFilter( Packet.Message ), 
+      new ExtensionFilter( MessageEventExtension.XMLNS )
+    ) 
+);
+]]></pre>
+</subsection>
+
+<subsection name="Respond to version requests">
+<pre name="code" class="javascript"><![CDATA[
+con.addPacketListener( function(iq) {
+    var versionIq = new Packet.IQ( iq.getFrom(), "set", "jabber:iq:version" );
+    versionIq.getQuery().textContent = "Rockin' Jabber Client";
+    con.send( versionIq );
+}, new IQQueryNSFilter ( "jabber:iq:version" ) );
+]]></pre>
+</subsection>
+
+
+    </section>
+    <section name="Extensions">
+
+
+<subsection name="Sign in to AIM">
+<pre name="code" class="javascript"><![CDATA[
+TransportHelper.registerForAim( "aim.im.soashable.com", "screen name", "password" );
+]]></pre>
+
+<p>-or-</p>
+
+<pre name="code" class="javascript"><![CDATA[
+var reg = new Packet.Registration();
+reg.setTo( "aim.soashable.com" );
+reg.setNode( "aimscreenname" );
+reg.setPassword( "mypass" );
+
+con.send( reg );
+]]></pre>
+
+</subsection>
+
+<subsection name="Store private data">
+<pre name="code" class="javascript"><![CDATA[
+var ds = con.getDataStorage();
+ds.set( "mycompany:greeting", "Hello", "greeting" );
+]]></pre>
+</subsection>
+
+<subsection name="Retrieve private data">
+<pre name="code" class="javascript"><![CDATA[
+var ds = con.getDataStorage();
+ds.get( "mycompany:greeting", function(responseNodes ) {
+    var greeting = responseNodes[0].textContent;
+    alert( greeting );
+}, "greeting" );
+]]></pre>
+</subsection>
+
+
+    </section>
+    <section name="Conference">
+
+<subsection name="Join a Multi-User Chat (MUC) ">
+<pre name="code" class="javascript"><![CDATA[
+var extProvider = ...;
+var mucMan = MucManager.getInstanceFor( con, "conference.soashable.com", extProvider );
+
+// get info about a room and create a state to act with
+var room = mucMan.getRoom( "soashable" ).createState();
+
+// join with the nick "harlan2"
+room.join( "harlan2" );
+]]></pre>
+</subsection>
+
+<subsection name="Get the status of a Join ">
+<pre name="code" class="javascript"><![CDATA[
+// use extjs's Ext.util.Observable for registering events
+room.on({
+  join: function(room, participant, packet) { },
+  error: function(room, participant, packet) {
+    console.dirxml( packet.getExtension( ErrorExtension.XMLNS ).getNode() );
+  },
+});
+
+room.join( "harlan2" );
+]]></pre>
+</subsection>
+
+<subsection name="Send Message to a MUC ">
+<pre name="code" class="javascript"><![CDATA[
+room.sendText( "Hello, MUC!" );
+]]></pre>
+</subsection>
+
+<subsection name="List Occupants ">
+<pre name="code" class="javascript"><![CDATA[
+// getting participants happens asynchronously, so it
+// does NOT simply return a list.
+room.getParticipants(function(room, participants) {
+    console.dir( participants );
+});
+]]></pre>
+</subsection>
+
+<subsection name="Leave a MUC ">
+<pre name="code" class="javascript"><![CDATA[
+room.part();
+]]></pre>
+</subsection>
+
+
+<subsection name="Getting a list of MUCs ">
+<pre name="code" class="javascript"><![CDATA[
+mucMan.getRoomList(function(mucMan, rooms) {
+    console.dir( rooms );
+});
+]]></pre>
+</subsection>
+        
+        
+    </section>
+
+  </body>
+</document>

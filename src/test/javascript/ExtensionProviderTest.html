@@ -1,0 +1,293 @@
+<html>
+	<head>
+		<title>JSUnit - RosterWindowTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+		
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+	
+		
+	</head>
+	<body>
+		<script type="text/javascript">
+
+
+
+
+var provider;
+var packetHelper;
+
+function setUp() {
+    provider = new Xmpp4Js.Ext.PacketExtensionProvider()
+	packetHelper = new Xmpp4Js.Packet.PacketHelper();
+    
+    provider.register( Xmpp4Js.Ext.MessageEvent.XMLNS, Xmpp4Js.Ext.MessageEvent );
+    provider.register( Xmpp4Js.Ext.ChatStates.XMLNS, Xmpp4Js.Ext.ChatStates );
+}
+function tearDown() {
+	packetHelper = null;
+    provider = null;
+}
+
+// TODO test Xmpp4Js.Ext.PacketExtensionProvider itself.
+
+function testMessageEvent_Single() {
+    var msg = new Xmpp4Js.Packet.Message();
+    var msgEvent = provider.create( Xmpp4Js.Ext.MessageEvent.XMLNS, msg, "composing" );
+    
+    var children = msg.getNode().getElementsByTagNameNS( msgEvent.getElementNS(), msgEvent.getElementName() );
+    
+    assertEquals( 1, children.getLength() );
+    assertEquals( 1, children.item(0).childNodes.length );
+    assertEquals( "composing", children.item(0).firstChild.nodeName );
+}
+
+function testMessageEvent_Multiple() {
+    var msg = new Xmpp4Js.Packet.Message();
+    var msgEvent = provider.create( Xmpp4Js.Ext.MessageEvent.XMLNS, msg, "composing" );
+    msgEvent.setEvent( "pooping" );
+    
+    var children = msg.getNode().getElementsByTagNameNS( msgEvent.getElementNS(), msgEvent.getElementName() );
+    
+    assertEquals( 1, children.getLength() );
+    assertEquals( 1, children.item(0).childNodes.length );
+    assertEquals( "pooping", children.item(0).firstChild.nodeName );
+}
+
+function testMessageEvent_Empty() {
+    var msg = new Xmpp4Js.Packet.Message();
+    var msgEvent = provider.create( Xmpp4Js.Ext.MessageEvent.XMLNS, msg, Xmpp4Js.Ext.MessageEvent.EVENT_EMPTY );
+    
+    // test empty event constructor
+    var children = msg.getNode().getElementsByTagNameNS( msgEvent.getElementNS(), msgEvent.getElementName() );
+    assertEquals( 1, children.getLength() );
+    assertEquals( 0, children.item(0).childNodes.length );
+    assertEquals( Xmpp4Js.Ext.MessageEvent.EVENT_EMPTY, msgEvent.getEvent() );
+    
+    // set an event and make sure all is well
+    msgEvent.setEvent( "composing" );
+    children = msg.getNode().getElementsByTagNameNS( msgEvent.getElementNS(), msgEvent.getElementName() );
+    assertEquals( 1, children.getLength() );
+    assertEquals( 1, children.item(0).childNodes.length );
+    assertEquals( "composing", children.item(0).firstChild.nodeName );
+    assertEquals( "composing", msgEvent.getEvent() );
+    
+    // then set event back and make sure we'll still good
+    msgEvent.setEvent( Xmpp4Js.Ext.MessageEvent.EVENT_EMPTY );
+    children = msg.getNode().getElementsByTagNameNS( msgEvent.getElementNS(), msgEvent.getElementName() );
+    assertEquals( 1, children.getLength() );
+    assertEquals( 0, children.item(0).childNodes.length );
+    assertEquals( Xmpp4Js.Ext.MessageEvent.EVENT_EMPTY, msgEvent.getEvent() );
+}
+
+function testChatState_Single() {
+    var msg = new Xmpp4Js.Packet.Message();
+    var chatState = provider.create( Xmpp4Js.Ext.ChatStates.XMLNS, msg, "active" );
+
+    assertEquals( "active", chatState.getElementName() );
+    
+    var children = msg.getNode().getElementsByTagNameNS( chatState.getElementNS(), chatState.getElementName() );
+
+    assertEquals( 1, children.getLength() );
+    assertEquals( "active", children.item(0).nodeName );
+}
+
+function testChatState_Multiple() {
+    var msg = new Xmpp4Js.Packet.Message();
+    var chatState = provider.create( Xmpp4Js.Ext.ChatStates.XMLNS, msg, "active" );
+    chatState.setState( "away" );
+
+    assertEquals( "away", chatState.getElementName() );
+    
+    var children = msg.getNode().getElementsByTagNameNS( chatState.getElementNS(), chatState.getElementName() );
+    assertEquals( 1, children.getLength() );
+    
+    var oldChildren = msg.getNode().getElementsByTagNameNS( "active", chatState.getElementName() );
+    assertEquals( 0, oldChildren.getLength() );
+}
+
+function testPacket_GetExtension() {
+    var msg = new Xmpp4Js.Packet.Message();
+    msg.getNode().appendChild(
+        DomBuilder.node( "active", {xmlns: Xmpp4Js.Ext.ChatStates.XMLNS} )
+    );
+    
+    msg.loadExtensions( provider );
+
+    var chatState = msg.getExtension( Xmpp4Js.Ext.ChatStates.XMLNS );
+    
+    assertNotUndefined( chatState );
+    assertEquals( "active", chatState.getState() );
+}
+
+function testPacket_GetExtensions() {
+    var msg = new Xmpp4Js.Packet.Message();
+    msg.getNode().appendChild(
+        DomBuilder.node( "active", {xmlns: Xmpp4Js.Ext.ChatStates.XMLNS} )
+    );
+    msg.getNode().appendChild(
+        DomBuilder.node( "x", {xmlns: Xmpp4Js.Ext.MessageEvent.XMLNS}, [
+            DomBuilder.node( "composing" )
+        ] )
+    );
+    
+    msg.loadExtensions( provider );
+    
+    var extensions = msg.getExtensions();
+
+    assertEquals( 2, extensions.length );
+    
+    var msgEvent = null;
+    var chatState = null;
+    for( var i = 0; i < extensions.length; i++ ) {
+        var ext = extensions[i];
+        if( ext.getElementNS() == Xmpp4Js.Ext.MessageEvent.XMLNS) {
+            msgEvent = msg.getExtension( Xmpp4Js.Ext.MessageEvent.XMLNS );
+        } else if( ext.getElementNS() == Xmpp4Js.Ext.ChatStates.XMLNS) {
+            chatState = msg.getExtension( Xmpp4Js.Ext.ChatStates.XMLNS );
+        } else {
+            fail( "Unknown extension: " + ext.getElementNS() );
+        }
+    }
+
+    assertNotNull( chatState );
+    assertEquals( "active", chatState.getState() );
+    
+    assertNotNull( msgEvent );
+    assertEquals( "composing", msgEvent.getEvent() );
+}
+
+function testPacket_GetExtensions_Unknown() {
+    var msg = new Xmpp4Js.Packet.Message();
+    msg.getNode().appendChild(
+        DomBuilder.node( "active", {xmlns: Xmpp4Js.Ext.ChatStates.XMLNS} )
+    );
+    msg.getNode().appendChild(
+        DomBuilder.node( "x", {xmlns: Xmpp4Js.Ext.MessageEvent.XMLNS}, [
+            DomBuilder.node( "composing" )
+        ] )
+    );
+    
+    msg.getNode().appendChild(
+        DomBuilder.node( "x", {xmlns: "some:unknown:namespace"}, [
+            DomBuilder.node( "composing" )
+        ] )
+    );
+    
+    msg.loadExtensions( provider );
+    
+    try {
+        var extensions = msg.getExtensions();
+
+        assertEquals( "getExtensions returned the wrong number", 2, extensions.length );
+    } catch(e) {
+        fail( "getExtensions threw error but it shouldn't have." );
+    }
+}
+
+function testPacket_AddExtension() {
+    var msg = new Xmpp4Js.Packet.Message();
+    
+    var chatState = provider.create( Xmpp4Js.Ext.ChatStates.XMLNS, msg, "active" );
+    msg.addExtension( chatState );
+    
+    chatState = msg.getExtension( Xmpp4Js.Ext.ChatStates.XMLNS );
+    
+    assertNotUndefined( chatState );
+    assertEquals( "active", chatState.getState() );
+}
+
+function testPacket_AddExtension_OverExisting() {
+    var msg = new Xmpp4Js.Packet.Message();
+    
+    var chatState = provider.create( Xmpp4Js.Ext.ChatStates.XMLNS, msg, "active" );
+    var chatState2 = provider.create( Xmpp4Js.Ext.ChatStates.XMLNS, msg, "gone" );
+    msg.addExtension( chatState );
+    msg.addExtension( chatState2 );
+    
+    chatState = msg.getExtension( Xmpp4Js.Ext.ChatStates.XMLNS );
+    
+    assertNotUndefined( chatState );
+    assertEquals( "gone", chatState.getState() );
+}
+
+function testPacket_RemoveExtension() {
+    var msg = new Xmpp4Js.Packet.Message();
+    
+    var chatState = provider.create( Xmpp4Js.Ext.ChatStates.XMLNS, msg, "active" );
+    msg.addExtension( chatState );
+    
+    msg.removeExtension( Xmpp4Js.Ext.ChatStates.XMLNS );
+    
+    chatState = msg.getExtension( Xmpp4Js.Ext.ChatStates.XMLNS );
+    
+    assertUndefined( chatState );
+    
+    var children = msg.getNode().getElementsByTagNameNS( Xmpp4Js.Ext.ChatStates.XMLNS, "active" );
+    assertEquals( 0, children.getLength() );
+}
+
+function BROKEN_testErrorExtension_PacketDefaultNS() {
+    var msg = new Xmpp4Js.Packet.Message();
+    msg.getNode().appendChild(
+        DomBuilder.node( "error", {code: "409", type: "cancel"}, [
+            DomBuilder.node( "conflict", {xmlns: "urn:ietf:params:xml:ns:xmpp-stanzas"} )
+        ] )
+    );
+    provider.register( Xmpp4Js.Ext.Error.XMLNS, Xmpp4Js.Ext.Error );
+    
+    msg.loadExtensions( provider );
+
+    var error = msg.getExtension( Xmpp4Js.Ext.Error.XMLNS );
+    
+    assertNotUndefined( error );
+    assertEquals( "409", error.getCode() );
+    assertEquals( "cancel", error.getType() );
+}
+
+function BROKEN_testErrorExtension_ImplicitNS() {
+    var stanzaProvider = new Xmpp4Js.Packet.StanzaProvider();
+    stanzaProvider.registerDefaultProviders();
+    
+    var packetNode = DomBuilder.node( "presence", {xmlns: "jabber:client"}, [
+            DomBuilder.node( "error", {code: "409", type: "cancel"}, [
+                DomBuilder.node( "conflict", {xmlns: "urn:ietf:params:xml:ns:xmpp-stanzas"} )
+            ] )
+        ]
+    );
+    var packet = stanzaProvider.fromNode( packetNode);
+    
+    provider.register( Xmpp4Js.Ext.Error.XMLNS, Xmpp4Js.Ext.Error );
+    packet.loadExtensions( provider );
+
+    var error = packet.getExtension( Xmpp4Js.Ext.Error.XMLNS );
+    
+    assertNotUndefined( error );
+    assertEquals( "409", error.getCode() );
+    assertEquals( "cancel", error.getType() );
+}
+
+function BROKEN_testErrorExtension_ExplicitNS() {
+    var msg = new Xmpp4Js.Packet.Message();
+    msg.getNode().appendChild(
+        DomBuilder.node( "error", {xmlns: "jabber:client", code: "409", type: "cancel"}, [
+            DomBuilder.node( "conflict", {xmlns: "urn:ietf:params:xml:ns:xmpp-stanzas"} )
+        ] )
+    );
+    provider.register( Xmpp4Js.Ext.Error.XMLNS, Xmpp4Js.Ext.Error );
+    
+    msg.loadExtensions( provider );
+
+    var error = msg.getExtension( Xmpp4Js.Ext.Error.XMLNS );
+    
+    assertNotUndefined( error );
+    assertEquals( "409", error.getCode() );
+    assertEquals( "cancel", error.getType() );
+}
+
+
+		</script>
+	</body>
+</html>
+
+

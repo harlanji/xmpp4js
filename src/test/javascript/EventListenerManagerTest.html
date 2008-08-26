@@ -1,0 +1,145 @@
+<html>
+	<head>
+		<title>JSUnit - RosterWindowTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+		
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+		
+	</head>
+	<body>
+		<script type="text/javascript">
+
+
+
+
+
+var EVENT_NAME = "event";
+
+var el;
+
+function setUp() {
+	el = new EventListenerManager();
+}
+
+function tearDown() {
+	el = null;
+}
+
+function testAddListener_One() {
+	var listener = function() {
+	
+	};
+	var id = el.add( EVENT_NAME, listener );
+	
+	
+	var listeners = el.getMap( EVENT_NAME );
+
+	assertEquals( 1, mapLength(listeners) );
+	assertEquals( listener, listeners[id] );
+}
+
+function testAddListener_Multiple() {
+	var listener1 = function() {
+	
+	};
+	
+	var listener2 = function() {
+	
+	};
+	var l1id = el.add( EVENT_NAME, listener1 );
+	var l2id = el.add( EVENT_NAME, listener2 );
+	
+	var listeners = el.getMap( EVENT_NAME );
+	
+	assertEquals( 2, mapLength(listeners) );
+	
+	assertEquals( listener1, listeners[ l1id ] );
+	assertEquals( listener2, listeners[ l2id ] );
+}
+
+function testRemoveListener_OldSignature() {
+	var listener = function() {
+	
+	};
+	var id = el.add( EVENT_NAME, listener );
+	el.remove( EVENT_NAME, id );
+	
+	var listeners = el.getMap( EVENT_NAME );
+	
+	assertEquals( 0, mapLength(listeners) );
+	assertUndefined( listeners[id] );
+}
+
+function testRemoveListener() {
+	var listener = function() {
+	
+	};
+	var id = el.add( EVENT_NAME, listener );
+	el.remove( id );
+	
+	var listeners = el.getMap( EVENT_NAME );
+	
+	assertEquals( 0, mapLength(listeners) );
+	assertUndefined( listeners[id] );
+}
+
+
+function testFire() {
+	
+	var arg1 = 123;
+	var arg2 = "abc";
+	var firedArg1 = undefined;
+	var firedArg2 = undefined;
+	
+	var method = function(arg1, arg2) {
+		firedArg1 = arg1;
+		firedArg2 = arg2;
+	};
+	
+	var method2 = function(arg1, arg2) {
+		fail( "Invoked wrong event." );
+	};
+	
+	el.add( EVENT_NAME, method);
+	el.add( EVENT_NAME + "2", method2);
+	
+	el.fire(EVENT_NAME, arg1, arg2);
+	
+	assertEquals( arg1, firedArg1 );
+	assertEquals( arg2, firedArg2 );
+}
+
+function testFireArgs() {
+	
+	var arg1 = 123;
+	var arg2 = "abc";
+	var firedArg1 = undefined;
+	var firedArg2 = undefined;
+	
+	var method = function(arg1, arg2) {
+		firedArg1 = arg1;
+		firedArg2 = arg2;
+	};
+	
+	var method2 = function(arg1, arg2) {
+		fail( "Invoked wrong event." );
+	};
+	
+	el.add( EVENT_NAME, method);
+	el.add( EVENT_NAME + "2", method2);
+	
+	el.fireArgs(EVENT_NAME, [arg1, arg2]);
+	
+	assertEquals( arg1, firedArg1 );
+	assertEquals( arg2, firedArg2 );
+}
+
+
+		</script>
+	</body>
+</html>
+
+
+
+

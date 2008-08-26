@@ -1,0 +1,74 @@
+<html>
+    <head>
+        <title>JSUnit - RosterWindowTest</title>
+        <script language="javascript" src="app/jsUnitCore.js"></script>
+        
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+        
+    </head>
+    <body>
+        <script type="text/javascript">
+
+
+function setUp() {
+}
+
+function tearDown() {
+}
+
+//function testCreateDocument() {
+//    var doc = createDocument();
+//    assertTrue( doc instanceof Document );
+//    
+//    var doc2 = createDocument();
+//    assertTrue( doc instanceof Document );
+//    
+//    assertNotEquals( doc, doc2 );
+//}
+
+// TODO test deep imports.
+function testImportNode() {
+    var doc = createDocument();
+    var doc2 = createDocument();
+    
+    var elem = doc.createElement( "div" );
+    
+    var elem2 = doc2.importNode( elem, true );
+
+    assertTrue( elem2 instanceof DOMElement );
+    // jsunit bug?
+    //assertObjectEquals( elem2.ownerDocument, doc2 );
+    assertNotEquals( elem, elem2 );
+}
+
+//function testParseXmlToDoc() {
+//    var xml = '<iq type="get"><query xmlns="jabber:iq:version"/></iq>';
+//
+//    var doc = parseXmlToDoc( xml );
+// 
+//    assertTrue( doc instanceof Document );
+//    assertEquals( "iq", doc.documentElement.nodeName );
+//    assertEquals( "query", doc.documentElement.firstChild.nodeName );
+//    assertEquals( "jabber:iq:version", doc.documentElement.firstChild.namespaceURI );
+//
+//}
+
+//function testSerializeXml() {
+//    var xml = '<iq type="get"><query xmlns="jabber:iq:version"/></iq>';
+//
+//    var doc = parseXmlToDoc( xml );
+//
+//    var outXml = serializeNode( doc.documentElement );
+//    
+//    assertEquals( xml, outXml );
+//}
+
+
+        </script>
+    </body>
+</html>
+
+
+
+

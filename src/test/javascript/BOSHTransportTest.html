@@ -1,0 +1,128 @@
+<html>
+    <head>
+        <title>JSUnit - RosterWindowTest</title>
+        <script language="javascript" src="app/jsUnitCore.js"></script>
+        
+        <script type="text/javascript" src="includes.js"></script>
+        <script type="text/javascript" src="common-test-library.js"></script>
+        
+    </head>
+    <body>
+        <script type="text/javascript">
+
+
+
+
+var bosh;
+
+function setUp() {
+    bosh = new MockBOSHTransport({
+        domain: "test.com"
+    });
+}
+function tearDown() {
+    bosh = null;
+}
+
+function testBeginSession() {
+    // setup variable to be caught on tx
+    var txPacket = undefined;
+
+    // create listener to catch outgoing packet
+    bosh.on( "write", function(packetNode) { 
+        txPacket = packetNode;
+    });
+
+    bosh.beginSession();
+    
+    // make sure that txPacket is an Element
+    assertNotUndefined( "txPacket was empty", txPacket );
+    assertTrue( "txPacket was not an element.", txPacket instanceof DOMElement );
+
+    // make sure we are adding attributes to raw packets
+    assertEquals( "txPacket did not have correct wait", bosh.wait, txPacket.getAttribute( "wait" ).toString() );
+    assertEquals( "txPacket did not have correct to", bosh.domain, txPacket.getAttribute( "to" ).toString() );
+ 
+    assertEquals( "txPacket did not have correct BOSH version", "1.6", txPacket.getAttribute( "ver" ).toString() );
+    assertEquals( "txPacket did not have correct xmpp version", "1.0", txPacket.getAttribute( "xmpp:version" ).toString() );
+    
+    assertTrue( "txPacket did not have a route", txPacket.hasAttribute( "route" ) );
+    assertTrue( "txPacket does not have a rid", txPacket.hasAttribute( "rid" ) );
+    assertFalse( "txPacket has a sid", txPacket.hasAttribute( "sid" ) );
+}
+
+function testWriteRaw() {
+
+    var packetHelper = new Xmpp4Js.Packet.PacketHelper();
+
+    // create raw packet with IQ element
+    var packet = packetHelper.createPacket();
+    var iq = packetHelper.createIQ( "test@test.com", "set", "jabber:iq:roster" );
+
+    var node = packet.ownerDocument.importNode( iq.getNode(), true );
+    packet.appendChild( node );
+
+    // setup variable to be caught on tx
+    var txPacket = undefined;
+
+    bosh.beginSession();
+
+    // create listener to catch outgoing packet
+    bosh.on( "write", function(packetNode) { 
+        txPacket = packetNode;
+    });
+
+    // send the packet
+    bosh.write( packet );
+
+    // make sure that txPacket is an Element
+    assertNotUndefined( "txPacket was empty", txPacket );
+    assertTrue( "txPacket was not an element.", txPacket instanceof DOMElement );
+
+    // make sure we are adding attributes to raw packets
+    assertTrue( "txPacket did not have an RID", txPacket.hasAttribute( "rid" ) );
+    assertTrue( "txPacket did not have an SID", txPacket.hasAttribute( "sid" ) );
+}
+
+function testWrite_RID() {
+    var packetHelper = new Xmpp4Js.Packet.PacketHelper();
+
+    // create raw packet with IQ element
+    var packet = packetHelper.createPacket();
+    var iq = packetHelper.createIQ( "test@test.com", "set", "jabber:iq:roster" );
+
+    var node = packet.ownerDocument.importNode( iq.getNode(), true );
+    packet.appendChild( node );
+
+    bosh.beginSession();
+
+
+
+    var inititalRid = null;
+    
+    bosh.on( "write", function(packetNode) { 
+        inititalRid = parseInt(packetNode.getAttribute( "rid" ).toString());
+    }, this, {single:true});
+
+    bosh.write( packet );
+
+    assertNotNull( "no intitial RID was set", inititalRid );
+    
+    var nextRid = null;
+    bosh.on( "write", function(packetNode) { 
+        nextRid = parseInt(packetNode.getAttribute( "rid" ).toString());
+    }, this);
+
+    bosh.write( packet );
+    assertEquals( "Rid did not increment 1", inititalRid + 1, nextRid );
+    
+    bosh.write( packet );
+    assertEquals( "Rid did not increment 2", inititalRid + 2, nextRid );
+}
+
+
+        </script>
+    </body>
+</html>
+
+

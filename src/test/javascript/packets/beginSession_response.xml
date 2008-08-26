@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<body xmlns="http://jabber.org/protocol/httpbind"
+	xmlns:stream="http://etherx.jabber.org/streams" authid="a88dbf85"
+	sid="12345" secure="true" requests="2" inactivity="30" polling="5"
+	wait="60" ver="1.6">
+	<stream:features>
+		<mechanisms xmlns="urn:ietf:params:xml:ns:xmpp-sasl">
+			<mechanism>PLAIN</mechanism>
+			<mechanism>CRAM-MD5</mechanism>
+			<mechanism>ANONYMOUS</mechanism>
+			<mechanism>DIGEST-MD5</mechanism>
+		</mechanisms>
+		<compression xmlns="http://jabber.org/features/compress">
+			<method>zlib</method>
+		</compression>
+		<bind xmlns="urn:ietf:params:xml:ns:xmpp-bind" />
+		<session xmlns="urn:ietf:params:xml:ns:xmpp-session" />
+	</stream:features>
+</body>

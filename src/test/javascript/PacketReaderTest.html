@@ -1,0 +1,109 @@
+<html>
+	<head>
+		<title>JSUnit - RosterWindowTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+		
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+		
+	</head>
+	<body>
+		<script type="text/javascript">
+
+
+
+
+var con;
+var packetHelper;
+
+function setUp() {
+	con = new MockConnection();
+	packetHelper = new Xmpp4Js.Packet.PacketHelper();
+}
+function tearDown() {
+	con = null;
+	packetHelper = null;
+}
+
+
+function testAddPacketListenerMatch() {
+
+}
+
+function testAddPacketListenerNoMatch() {
+
+}
+
+function testAddPacketListenerNoFilter() {
+	var packet = loadTestPacket( "packets/iq_roster_result.xml" );
+	var stanzaNode = packet.getElementsByTagName("iq" ).item(0);
+
+	var wasInvoked = false;
+	con.addPacketListener( function(stanza) {
+		wasInvoked = true;
+		
+		assertEquals( stanzaNode, stanza.getNode() );
+	} );
+	
+	con.onRecv( packet );
+	assertTrue( "The packet listener was never invoked.", wasInvoked );
+}
+
+function testRemovePacketListener() {
+	var packet = loadTestPacket( "packets/iq_roster_result.xml" );
+        var stanzaNode = packet.getElementsByTagName("iq" ).item(0);
+
+	var wasInvoked = false;
+	var listener = function(stanza) {
+		wasInvoked = true;
+	};
+	con.addPacketListener( listener );
+	con.removePacketListener( listener );
+	
+	con.onRecv( packet );
+	assertFalse( "The packet listener was invoked but it shouldn't have been.", wasInvoked );
+}
+
+function testAddMultiplePacketListenerWithErrors() {
+	var packet = loadTestPacket( "packets/iq_roster_result.xml" );
+	var stanzaNode = packet.getElementsByTagName("iq" ).item(0);
+
+	var wasInvoked1 = false;
+	var wasInvoked2 = false;
+	con.addPacketListener( function(stanza) {
+		wasInvoked1 = true;
+		
+		throw new Error("some error");
+		assertEquals( stanzaNode, stanza.getNode() );
+	} );
+	con.addPacketListener( function(stanza) {
+		wasInvoked2 = true;
+		
+		assertEquals( stanzaNode, stanza.getNode() );
+	} );
+	
+	con.onRecv( packet );
+	
+	// Assert both packet listeners are invoked
+	assertTrue( "The packet listener was never invoked.", wasInvoked1 );
+	assertTrue( "The packet listener was never invoked.", wasInvoked2 );	
+}
+
+function testHandleResponse() {
+
+}
+
+function testHandleResponseStanza() {
+
+}
+
+function testHandleResponseRaw() {
+
+}
+
+
+		</script>
+	</body>
+</html>
+
+

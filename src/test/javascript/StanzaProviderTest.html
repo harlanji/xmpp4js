@@ -1,0 +1,170 @@
+<html>
+	<head>
+		<title>JSUnit - RosterWindowTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+		
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+		
+	</head>
+	<body>
+		<script type="text/javascript">
+
+
+
+
+var provider;
+var packetHelper;
+
+function setUp() {
+	provider = new Xmpp4Js.Packet.StanzaProvider();
+	packetHelper = new Xmpp4Js.Packet.PacketHelper();
+}
+function tearDown() {
+	provider = null;
+	packetHelper = null;
+}
+
+
+function testNoRegisteredProviders() {
+
+	var stanza = packetHelper.createIQ( "test@test.xml", "get", "jabber:iq:test" );
+
+	try {
+		var providerRes = provider.fromNode( stanza.getNode() ); 
+		fail( "Should have thrown an error." );
+	} catch(e) {
+		assertTrue( e instanceof Error );
+		assertTrue( e instanceof NoProviderError );
+		assertEquals( stanza.getNode(), e.getStanzaNode() );
+	}
+}
+
+function testRegister() {
+
+	try {
+		var providerRes = provider.fromNode( stanza.getNode() ); 
+		fail( "Should have thrown an error." );
+	} catch(e) {
+		assertTrue( true ); 
+	}
+
+
+	// match all packets with elem name iq, priority 1, and make a Packet.IQ
+	provider.register(
+		Xmpp4Js.Packet.StanzaProvider.BaseProvider,
+		Xmpp4Js.Packet.Base,
+		1
+	);
+
+	var stanza = packetHelper.createIQ( "test@test.xml", "get", "jabber:iq:test" );
+
+	try {
+		var providerRes = provider.fromNode( stanza.getNode() ); 
+		assertNotUndefined( providerRes );
+		assertTrue( providerRes instanceof Xmpp4Js.Packet.Base );
+	} catch( e ) {
+		fail( "Should not have thrown an error." );
+	}
+}
+
+function testPriority() {
+	// match all packets with elem name iq, priority 1, and make a Packet.Base
+	provider.register(
+		Xmpp4Js.Packet.StanzaProvider.BaseProvider,
+		Xmpp4Js.Packet.Base,
+		0
+	);
+
+
+	// match all packets with elem name iq, priority 1, and make a Packet.IQ
+	provider.register(
+		Xmpp4Js.Packet.StanzaProvider.IQProvider,
+		Xmpp4Js.Packet.IQ,
+		1
+	);
+
+	var stanza = packetHelper.createIQ( "test@test.xml", "get", "jabber:iq:test" );
+
+	var providerRes = provider.fromNode( stanza.getNode() );
+	
+	assertTrue( providerRes instanceof Xmpp4Js.Packet.Base );
+	assertTrue( providerRes instanceof Xmpp4Js.Packet.IQ );
+}
+
+function testBaseProvider() {
+
+	// match all packets with elem name iq, priority 1, and make a Packet.Base
+	provider.register(
+		Xmpp4Js.Packet.StanzaProvider.BaseProvider,
+		Xmpp4Js.Packet.Base,
+		1
+	);
+
+	var stanza = packetHelper.createIQ( "test@test.xml", "get", "jabber:iq:test" );
+
+	var providerRes = provider.fromNode( stanza.getNode() ); 
+	
+	assertTrue( providerRes instanceof Xmpp4Js.Packet.Base );
+
+}
+
+function testIQProvider() {
+
+	// match all packets with elem name iq, priority 1, and make a Packet.IQ
+	provider.register(
+		Xmpp4Js.Packet.StanzaProvider.IQProvider,
+		Xmpp4Js.Packet.IQ,
+		1
+	);
+
+	var stanza = packetHelper.createIQ( "test@test.xml", "get", "jabber:iq:test" );
+
+	var providerRes = provider.fromNode( stanza.getNode() );
+	
+	assertTrue( providerRes instanceof Xmpp4Js.Packet.Base );
+	assertTrue( providerRes instanceof Xmpp4Js.Packet.IQ );
+}
+
+function testMessageProvider() {
+
+	// match all packets with elem name iq, priority 1, and make a Packet.Message
+	provider.register(
+		Xmpp4Js.Packet.StanzaProvider.MessageProvider,
+		Xmpp4Js.Packet.Message,
+		1
+	);
+
+	var stanza = packetHelper.createMessage( "test@test.xml", "normal", "body" );
+
+	var providerRes = provider.fromNode( stanza.getNode() );
+	
+	assertTrue( providerRes instanceof Xmpp4Js.Packet.Base );
+	assertTrue( providerRes instanceof Xmpp4Js.Packet.Message );
+}
+
+function testPresenceProvider() {
+
+	// match all packets with elem name iq, priority 1, and make a Packet.Presence
+	provider.register(
+		Xmpp4Js.Packet.StanzaProvider.PresenceProvider,
+		Xmpp4Js.Packet.Presence,
+		1
+	);
+
+	var stanza = packetHelper.createPresence( "test@test.xml", "available" );
+
+	var providerRes = provider.fromNode( stanza.getNode() );
+	
+	assertTrue( providerRes instanceof Xmpp4Js.Packet.Base );
+	assertTrue( providerRes instanceof Xmpp4Js.Packet.Presence );
+}
+
+
+
+
+		</script>
+	</body>
+</html>
+
+

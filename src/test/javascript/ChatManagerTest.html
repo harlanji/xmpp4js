@@ -1,0 +1,343 @@
+<html>
+	<head>
+		<title>JSUnit - RosterWindowTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+		
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+		
+	</head>
+	<body>
+		<script type="text/javascript">
+
+
+var THREAD_ID = "threadid";
+
+var con;
+var chatMan;
+var packetHelper;
+
+function setUp() {
+
+        con = new MockConnection();
+        con.connect();
+	
+	chatMan = new Xmpp4Js.Chat.ChatManager.getInstanceFor( con );
+	packetHelper = con.getPacketHelper();
+}
+function tearDown() {
+	packetHelper = null;
+	chatMan = null;
+	con = null;
+}
+
+
+
+function testMessageThreadFilter_True() {
+
+	var pf = new Xmpp4Js.Chat.MessageThreadFilter( THREAD_ID );
+	
+	var msg = packetHelper.createMessage( "test@test.com", "normal", "body", "subject" );
+	
+	msg.setThread( THREAD_ID );
+	
+	var result = pf.accept( msg );
+	assertTrue( result );
+}
+
+function testMessageThreadFilter_False() {
+
+	var pf = new Xmpp4Js.Chat.MessageThreadFilter( THREAD_ID );
+	
+	var msg = packetHelper.createMessage( "test@test.com", "normal", "body", "subject" );
+	
+	msg.setThread( THREAD_ID + " WRONG" );
+	
+	var result = pf.accept( msg );
+	assertFalse( result );
+}
+
+function testCreateChat() {
+	var chat = chatMan.createChat( "test@test.com" );
+	
+	assertNotUndefined( chat );
+	assertTrue( chat instanceof Xmpp4Js.Chat.Chat );
+	assertNotUndefined( chat.getThread() );
+	
+	var participant = chat.getParticipant();
+	assertTrue( participant.equals("test@test.com") );
+}
+
+function testCreateChat_JidObject() {
+	var chat = chatMan.createChat( new Xmpp4Js.Jid("test@test.com") );
+	
+	assertNotUndefined( chat );
+	assertTrue( chat instanceof Xmpp4Js.Chat.Chat );
+	assertNotUndefined( chat.getThread() );
+	
+	var participant = chat.getParticipant();
+	assertTrue( participant.equals("test@test.com") );
+}
+
+function testCreateChat_DifferentThreads() {
+	var chat1 = chatMan.createChat( "test@test.com" );
+	var chat2 = chatMan.createChat( "test@test.com" );
+
+	assertNotEquals( chat1.getThread(), chat2.getThread() );
+}
+
+function testCreateChatWithThread() {
+	var chat1 = chatMan.createChat( "test@test.com", THREAD_ID );
+	var chat2 = chatMan.createChat( "test@test.com", THREAD_ID + "2" );
+	
+	assertEquals( THREAD_ID, chat1.getThread() );
+	assertEquals( THREAD_ID + "2", chat2.getThread() );
+}
+
+function testCreateMessage() {
+	var chat = chatMan.createChat( "test@test.com", THREAD_ID );
+	
+	var msg = chat.createMessage( "sup man" );
+	
+	assertNotUndefined( msg );
+	assertTrue( msg instanceof Xmpp4Js.Packet.Message );
+	assertEquals( "test@test.com", msg.getTo() );
+	assertEquals( THREAD_ID, msg.getThread() );
+	assertEquals( "sup man", msg.getBody() );
+	assertEquals( "chat", msg.getType() );
+}
+
+function testSendMessage_MessageStanza() {
+	var chat = chatMan.createChat( "test@test.com", THREAD_ID );
+	
+	var msg = chat.createMessage( "sup man" );
+	chat.sendMessage( msg );
+         
+        var txStanza = con.sentPackets[0];
+        assertNotUndefined( txStanza );
+	
+	assertEquals( "test@test.com", txStanza.getTo() );
+	assertEquals( THREAD_ID, txStanza.getThread() );
+	assertEquals( "sup man", txStanza.getBody() );
+}
+
+function testSendMessage_Text() {
+
+	var chat = chatMan.createChat( "test@test.com", THREAD_ID );
+	
+	var msg = "sup man";
+	chat.sendMessage( msg );
+
+        var txStanza = con.sentPackets[0];
+	assertNotUndefined( txStanza );
+         
+	assertEquals( "test@test.com", txStanza.getTo() );
+	assertEquals( THREAD_ID, txStanza.getThread() );
+	assertEquals( "sup man", txStanza.getBody() );
+	
+}
+
+function testReceiveMessage_Event() {
+	var packet = loadTestPacket( "packets/incoming_message_chat.xml" );
+	var stanzaNode = packet.getElementsByTagName("message" ).item(0);
+	
+	
+	var wasInvoked = false;
+	var chat = chatMan.createChat( "test@test.com", THREAD_ID, function(chat, msg) {
+		wasInvoked = true;
+		
+		assertNotUndefined( msg );
+		assertEquals( THREAD_ID, msg.getThread() );
+		assertEquals( "test@test.com", msg.getFrom() );
+		assertEquals( "sup man", msg.getBody() );
+	});
+	
+
+	con.onRecv( packet );
+	
+	assertTrue( wasInvoked );
+}
+
+function testReceiveMessage_Event_Two() {
+    var packet = loadTestPacket( "packets/incoming_message_chat.xml" );
+    var stanzaNode = packet.getElementsByTagName("message" ).item(0);
+    
+    
+    var invokationCount = 0;
+    var chat = chatMan.createChat( "test@test.com", THREAD_ID, function(chat, msg) {
+        invokationCount++;
+        
+        assertNotUndefined( msg );
+        assertEquals( THREAD_ID, msg.getThread() );
+        assertEquals( "test@test.com", msg.getFrom() );
+        assertEquals( "sup man", msg.getBody() );
+    });
+    
+
+    con.onRecv( packet );
+    con.onRecv( packet );
+    
+    assertEquals( 2, invokationCount);
+}
+
+function testReceiveMessage_Event_New() {
+    var packet = loadTestPacket( "packets/incoming_message_chat.xml" );
+    var stanzaNode = packet.getElementsByTagName("message" ).item(0);
+
+    
+    
+    var invokationCount = 0;
+    var chat = chatMan.createChat( "test@test.com", THREAD_ID, function(chat, msg) {
+        invokationCount++;
+        
+        assertNotUndefined( msg );
+        assertEquals( THREAD_ID, msg.getThread() );
+        assertEquals( "test@test.com", msg.getFrom() );
+        assertEquals( "sup man", msg.getBody() );
+    });
+    
+
+    con.onRecv( packet );
+    con.onRecv( packet );
+    
+    assertEquals( 2, invokationCount);
+}
+
+function testGetThreadChat() {
+	var chat1 = chatMan.createChat( "test@test.com", THREAD_ID  );
+	var chat2 = chatMan.createChat( "test2@test.com", THREAD_ID + "2"  );
+	
+	assertEquals( chat1, chatMan.getThreadChat( THREAD_ID ) );
+	assertEquals( chat2, chatMan.getThreadChat( THREAD_ID + "2" ) );	
+}
+
+
+function testGetUserChat() {
+	var chat1 = chatMan.createChat( "test@test.com"  );
+	var chat2 = chatMan.createChat( "test2@test.com"  );
+	var chat3 = chatMan.createChat( "test3@test.com"  );
+
+
+	assertEquals( chat1, chatMan.getUserChat( "test@test.com" ) );
+	assertEquals( chat2, chatMan.getUserChat( "test2@test.com" ) );
+	assertEquals( chat3, chatMan.getUserChat( "test3@test.com" ) );
+}
+
+
+
+function testFindBestChat_None() {
+	var msg = packetHelper.createMessage( "test@test.com" );
+	try {
+       var chat = chatMan.findBestChat( "test@test.com" );
+	   fail( "Should have thrown exception");
+    } catch(e) {
+    
+    }
+}
+
+function testFindBestChat_Thread() {
+	var chat = chatMan.createChat( "test@test.com", "123" );
+	var chat2 = chatMan.createChat( "test@test.com", "456" );
+	
+	var foundChat = chatMan.findBestChat( "test@test.com", "123"  );
+	var foundChat2 = chatMan.findBestChat( "test@test.com", "456" );
+
+	assertEquals( chat.getThread(), foundChat.getThread() );
+	assertEquals( chat2.getThread(), foundChat2.getThread() );
+
+}
+
+function testFindBestChat_Jid() {
+	var chat = chatMan.createChat( "test@test.com", "123" );
+	var chat2 = chatMan.createChat( "test@test.com", "456" );
+	
+	var foundChat = chatMan.findBestChat( "test@test.com" );
+
+	assertNotUndefined( chat );
+	// since we only have jid, it can go either way. In the future, there
+	// should be a 'most recent message' or something.
+	assertTrue( foundChat.getThread() == chat.getThread() || foundChat.getThread() == chat2.getThread() );
+}
+
+/**
+ * Ensures that all events are fired when a chat object is closed using the
+ * ChatManager object. Another related test is below that uses the Chat object
+ * directly.
+ * @see #testCloseChat_ChatObj
+ */
+function testCloseChat_ChatMan() {
+    var toJid = "test@test.com";
+    var threadId = "abc123";
+    
+    var gotChatManEvent = false;
+    var gotChatObjEvent = false;
+    
+    
+    var chat = chatMan.createChat( toJid, threadId  );
+    chatMan.on( "chatClosed", function(closedChat) {
+        gotChatManEvent = true;
+        assertEquals( "Wrong chat object was passed to chatClosed event on ChatManager", chat, closedChat ); 
+    });
+    chat.on( "close", function(closedChat) {
+        gotChatObjEvent = true;
+        assertEquals( "Wrong chat object was passed to close event on Chat", chat, closedChat );
+    });
+    
+    chatMan.closeChat( chat );
+    
+    assertTrue( "Did not get chatClosed event from ChatManager.", gotChatManEvent );
+    assertTrue( "Did not get close event from Chat object.", gotChatObjEvent );
+    
+    assertUndefined( "Chat was not cleared in ChatManager for user", chatMan.getUserChat( toJid ) );
+    assertUndefined( "Chat was not cleared in ChatManager for thread", chatMan.getThreadChat( threadId ) );
+}
+
+/**
+ * Ensures that all events are fired when a chat object is closed using the
+ * directly using the Chat object. Another related test is above that uses the 
+ * ChatManager object directly.
+ * @see #testCloseChat_ChatObj
+ */
+function testCloseChat_ChatObj() {
+    var toJid = "test@test.com";
+    var threadId = "abc123";
+    
+    var gotChatManEvent = false;
+    var gotChatObjEvent = false;
+    
+    
+    var chat = chatMan.createChat( toJid, threadId  );
+    chatMan.on( "chatClosed", function(closedChat) {
+        gotChatManEvent = true;
+        assertEquals( "Wrong chat object was passed to chatClosed event on ChatManager", chat, closedChat ); 
+    });
+    chat.on( "close", function(closedChat) {
+        gotChatObjEvent = true;
+        assertEquals( "Wrong chat object was passed to close event on Chat", chat, closedChat );
+    });
+    
+    chat.close();
+    
+    assertTrue( "Did not get chatClosed event from ChatManager.", gotChatManEvent );
+    assertTrue( "Did not get close event from Chat object.", gotChatObjEvent );
+    
+    assertUndefined( "Chat was not cleared in ChatManager for user", chatMan.getUserChat( toJid ) );
+    assertUndefined( "Chat was not cleared in ChatManager for thread", chatMan.getThreadChat( threadId ) );
+}
+
+/*
+function testGetOrCreateChat_Resource() {
+	var msg1 = packetHelper.createMessage( "test@test.com/a" );
+	var msg2 = packetHelper.createMessage( "test@test.com/b" );
+	var chat1 = chatMan.getOrCreateChat( msg1, true );
+	var chat2 = chatMan.getOrCreateChat( msg2, true );
+	
+	assertEquals( chat1.getThread(), chat2.getThread() );
+}
+*/
+
+		</script>
+	</body>
+</html>
+
+

@@ -1,0 +1,37 @@
+ ------
+ The HACKING File
+ ------
+ Harlan Iverson
+ ------
+ 02/08/2008
+ ------
+
+The HACKING File
+
+ The idea of a HACKING file is 'stolen' from the Subversion project, as it's
+ a particularly nice thing to have around. It will be the mother of many more
+ specific topics.
+
+
+* Why build Xmpp4Js from scratch?
+
+ There is another Javascript XMPP/BOSH library out there called JSJaC, which 
+ as of late has been evolving into a much nicer piece of code. At the time, 
+ it simply did not meet my needs because:
+
+  * There could only be one instance.
+
+  * The coding style was aweful and had little to no documentation.
+
+  * There were zero unit tests, and due to the single instance limitation and 
+    tight coupling of the code, it was not possible to write them.
+
+ Again, some of these issues have been resolved, but Xmpp4Js is mature enough that
+ there is no reason to switch back now.
+
+* What about Dojo Cometd (Bayeaux)?
+
+ Xmpp4Js is built in such a way that there is room to experiment with that
+ technology. It should be as simple as implementing another Xmpp4Js.Transport. 
+ Currently there is no major advantage to switching from BOSH, but scalability 
+ concerns in the future may necessitate exploring other avenues including Bayeaux.

@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<assembler>
+    <scripts>
+        <script>
+            <fileName>xmpp4js.js</fileName>
+            <includes>
+                <!-- lang -->
+                <include>adapter/Default.js</include>
+                
+                <!-- utils -->
+                <include>Jid.js</include>
+                <include>DomBuilder.js</include>
+                
+                <!-- packets -->
+                <include>packet/Base.js</include>
+                <include>packet/IQ.js</include>
+                <include>packet/Message.js</include>
+                <include>packet/Presence.js</include>
+                <include>packet/AuthPlainText.js</include>
+                <include>packet/PacketExtension.js</include>
+                <include>packet/PacketListenerManager.js</include>
+                <include>packet/Registration.js</include>
+                
+                <!-- utils / misc -->
+                <include>StanzaProvider.js</include>
+                <include>PacketHelper.js</include>
+                <include>KeySequence.js</include>
+                <include>Events.js</include>
+                
+                <!-- network i/o 
+                <include>io/RequestPool.js</include>
+                <include>io/PacketIO.js</include>
+                <include>io/PacketCollector.js</include>
+                <include>io/HttpBindingStream.js</include>
+                -->
+                <include>transport/Base.js</include>
+                <include>transport/BOSH.js</include>
+                <include>transport/Script.js</include>
+                
+                <!-- packet filter -->
+                <include>PacketFilter.js</include>
+                <include>packetfilter/**.js</include>
+                
+                <!-- plugin manager 
+                <include>PluginManager.js</include>
+                -->
+                
+                <!-- sasl stuff -->
+                <include>md5sasl/**.js</include>
+                
+
+                
+                <!-- clients 
+                <include>JabberClient.js</include>
+                <include>BayeuxXmppClient.js</include>
+                -->
+                <include>XmppConnection.js</include>
+                
+                <!-- chat -->
+                <include>chat/Chat.js</include>
+                <include>chat/MessageThreadFilter.js</include>
+                <include>chat/ChatManager.js</include>
+                
+                <!-- roster -->
+                <include>roster/RosterEntry.js</include>
+                <include>roster/RosterGroup.js</include>
+                <include>roster/VirtualRosterGroup.js</include>
+                <include>roster/UnfiledEntriesRosterGroup.js</include>
+                <include>roster/RosterItemManager.js</include>
+                <include>roster/PresenceManager.js</include>
+                <include>roster/Roster.js</include>
+                <include>roster/RosterPacket.js</include>
+                
+                <!-- muc -->
+                <include>muc/MucParticipant.js</include>
+                <include>muc/MucRoom.js</include>
+                <include>muc/StatefulMucRoom.js</include>
+                <include>muc/MucPresenceFilter.js</include>
+                <include>muc/MucError.js</include>
+                <include>muc/MucManager.js</include>
+                <include>muc/ext/**.js</include>
+                
+                <include>ext/DataStorage.js</include>
+                <include>ext/ServiceDisco.js</include>
+                
+                <include>workflow/**.js</include>
+            </includes>
+        </script>
+    </scripts>
+</assembler>

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<body xmlns="http://jabber.org/protocol/httpbind">
+<iq from='macbeth.shakespeare.lit'
+    id='....'
+    to='hag66@shakespeare.lit/pda'
+    type='result'
+    xmlns="jabber:client">
+  <query xmlns='http://jabber.org/protocol/disco#items'>
+    <item jid='heath@macbeth.shakespeare.lit'
+          name='A Lonely Heath'/>
+    <item jid='darkcave@macbeth.shakespeare.lit'
+          name='A Dark Cave'/>
+    <item jid='forres@macbeth.shakespeare.lit'
+          name='The Palace'/>
+    <item jid='inverness@macbeth.shakespeare.lit'
+          name='Macbeth&apos;s Castle'/>
+  </query>
+</iq>
+</body>
+    

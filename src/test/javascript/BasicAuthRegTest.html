@@ -1,0 +1,74 @@
+<html>
+	<head>
+		<title>JSUnit - RosterWindowTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+		
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+		
+	</head>
+	<body>
+		<script type="text/javascript">
+		
+		
+		
+/**
+ * Disabled -- see Issue #10
+ */
+function DISABLED_testRegister() {
+
+	var con = new Xmpp4Js.XmppDummyConnection( "im.cosmacs.org", "/http-bind/" );
+
+	con.beginSession();
+	con.register( "testregister", "test" );
+	con.authenticatePlaintext( "testregister", "test", "test" );
+	
+	// not much to test since it isn't live... unless we test the creating of a packet.
+}
+
+/**
+ * Disabled -- see Issue #10
+ */
+function DISABLED_testAuthAnonymous() {
+	var con = new Xmpp4Js.XmppDummyConnection( "im.cosmacs.org", "/http-bind/" );
+	con.asynchronous = false;
+
+	con.beginSession();
+	con.authenticateAnonymous();
+	
+	// not much to test since it isn't live... unless we test the creating of a packet.
+}
+
+/**
+ * Disabled -- see Issue #10
+ */
+function DISABLED_testAuthPlaintext() {
+	var con = new Xmpp4Js.XmppDummyConnection( "im.cosmacs.org", "/http-bind/" );
+	con.asynchronous = false;
+
+	// TODO figure out why this is called 4 times by testCreateRosterEntry, but 0 if that function is commented out.
+	var onAuthCount = 0;
+	var onAuthEvent = function( con ) {
+		onAuthCount++;
+	}
+
+	con.addListener( "onconnect", onAuthEvent );
+	con.addListener( "onauth", onAuthEvent );
+	
+	con.beginSession();
+	con.authenticatePlaintext( "test2", "test", "test" );
+	
+	var outPacket = con.sendQueue();
+	
+	
+	assertEquals( 2, onAuthCount );
+	
+	// not much to test since it isn't live... unless we test the creating of a packet.
+}
+
+
+		</script>
+	</body>
+</html>
+
+

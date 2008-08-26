@@ -1,0 +1,28 @@
+ ------
+ About
+ ------
+ Harlan Iverson
+ ------
+ 07/15/2008
+ ------
+
+ Xmpp4Js is an XMPP client library written in pure Javascript. It connects to a 
+ server using BOSH (XEP-0124, 0206) Binding or Script Syntax. 
+
+HTTP Binding
+
+ This method uses XmlHttpRequests to get and receive packets from a BOSH implementation 
+ on the same domain as the connecting site. The only way to run in BOSH mode 
+ is to serve your site from the same domain as the BOSH implementation (same-origin policy); 
+ this can be achieved by using an HTTP proxy or a Servlet filter.
+
+Script Syntax
+
+ Script Syntax allows connections to a remote BOSH server without requiring a BOSH 
+ implementation on the same domain as your site--it is immune from the same-origin 
+ policy. This is because it uses script tags rather than XmlHttpRequest.
+
+ This method also allows XMPP-enabled applications to be run locally though a 
+ plain HTML file or Adobe Air.
+
+ There are no performance reasons or otherwise to avoid using Script Syntax.

@@ -1,0 +1,106 @@
+<html>
+	<head>
+		<title>JSUnit - RosterWindowTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+		
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+		
+	</head>
+	<body>
+		<script type="text/javascript">
+
+
+function setUp() {
+
+}
+
+function tearDown() {
+
+}
+
+
+function testMucPresenceFilter_NoRoom_True() {
+	var pres = new Xmpp4Js.Packet.Presence(undefined, "someplace@soashable.com", undefined, undefined, undefined);
+        pres.setFrom( "one@conference.soashable.com/firstwitch" );
+        var node = pres.getNode().ownerDocument.createElementNS( "http://jabber.org/protocol/muc#user", "x");
+        pres.getNode().appendChild( node );
+
+	var pf = new Xmpp4Js.Muc.MucPresenceFilter();
+	
+	var result = pf.accept( pres );
+	assertTrue( result );
+}
+
+function testMucPresenceFilter_NoRoom_False_WrongNS() {
+	var pres = new Xmpp4Js.Packet.Presence(undefined, "someplace@soashable.com", undefined, undefined, undefined);
+        pres.setFrom( "one@conference.soashable.com/firstwitch" );
+        var node = pres.getNode().ownerDocument.createElementNS( "WRONG http://jabber.org/protocol/muc#user", "x");
+        
+        pres.getNode().appendChild( node );
+
+	var pf = new Xmpp4Js.Muc.MucPresenceFilter();
+	
+	var result = pf.accept( pres );
+	assertFalse( result );
+}
+
+function testMucPresenceFilter_Room_True() {
+	var pres = new Xmpp4Js.Packet.Presence(undefined, "someplace@soashable.com", undefined, undefined, undefined);
+        pres.setFrom( "one@conference.soashable.com/firstwitch" );
+        var node = pres.getNode().ownerDocument.createElementNS( "http://jabber.org/protocol/muc#user", "x");
+        
+        pres.getNode().appendChild( node );
+
+	var pf = new Xmpp4Js.Muc.MucPresenceFilter("one@conference.soashable.com");
+	
+	var result = pf.accept( pres );
+	assertTrue( result );
+}
+
+function testMucPresenceFilter_Room_False() {
+	var pres = new Xmpp4Js.Packet.Presence(undefined, "someplace@soashable.com", undefined, undefined, undefined);
+        pres.setFrom( "one@conference.soashable.com/firstwitch" );
+        var node = pres.getNode().ownerDocument.createElementNS( "WRONG http://jabber.org/protocol/muc#user", "x");
+        
+        pres.getNode().appendChild( node );
+
+	var pf = new Xmpp4Js.Muc.MucPresenceFilter("one@conference.soashable.com");
+	
+	var result = pf.accept( pres );
+	assertFalse( result );
+}
+
+function testMucPresenceFilter_Occupant_True() {
+	var pres = new Xmpp4Js.Packet.Presence(undefined, "someplace@soashable.com", undefined, undefined, undefined);
+        pres.setFrom( "one@conference.soashable.com/firstwitch" );
+        var node = pres.getNode().ownerDocument.createElementNS( "http://jabber.org/protocol/muc#user", "x");
+        
+        pres.getNode().appendChild( node );
+
+	var pf = new Xmpp4Js.Muc.MucPresenceFilter("one@conference.soashable.com/firstwitch");
+	
+	var result = pf.accept( pres );
+	assertTrue( result );
+}
+
+function testMucPresenceFilter_Occupant_False() {
+	var pres = new Xmpp4Js.Packet.Presence(undefined, "someplace@soashable.com", undefined, undefined, undefined);
+        pres.setFrom( "one@conference.soashable.com/firstwitch" );
+        var node = pres.getNode().ownerDocument.createElementNS( "WRONG http://jabber.org/protocol/muc#user", "x");
+        
+        pres.getNode().appendChild( node );
+
+	var pf = new Xmpp4Js.Muc.MucPresenceFilter("one@conference.soashable.com/secondwitch");
+	
+	var result = pf.accept( pres );
+	assertFalse( result );
+}
+
+		</script>
+	</body>
+</html>
+
+
+
+

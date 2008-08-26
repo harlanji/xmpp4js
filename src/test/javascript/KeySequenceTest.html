@@ -1,0 +1,77 @@
+<html>
+	<head>
+		<title>JSUnit - RosterWindowTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+		
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+		
+	</head>
+	<body>
+		<script type="text/javascript">
+
+
+
+var KEYSEQ_LENGTH = 5;
+var keySeq;
+
+function setUp() {
+	keySeq = new KeySequence(KEYSEQ_LENGTH);
+}
+function tearDown() {
+	keySeq = null;
+}
+
+function testGetSize() {
+	assertEquals( KEYSEQ_LENGTH, keySeq.getSize() );
+}
+
+function testGetNextKey() {
+	var key1 = keySeq.getNextKey();
+	var key2 = keySeq.getNextKey();
+	
+	assertNotEquals( key1, key2 );
+	assertEquals( key1, keySeq._hash( key2 ) );
+}
+/*
+function testGetNextKeyAll() {
+	var prevKey = keySeq.getNextKey();
+	var keyCount = 1;
+	
+	while( prevKey !== null ) {
+		var key = keySeq.getNextKey();
+		assertNotNull( key );
+		assertNotEquals( prevKey, key );
+		assertEquals( prevKey, keySeq._hash( key ) );
+		
+		keyCount++;
+		
+		prevKey = key;
+	}
+	
+	assertEquals( KEYSEQ_LENGTH, keyCount );
+}
+*/
+
+function testIsFirstKey() {
+	
+	assertTrue( keySeq.isFirstKey() );
+	
+	keySeq.getNextKey();
+	
+	assertFalse( keySeq.isFirstKey() );
+}
+
+function testIsLastKey() {
+	for( var i = 0; i < KEYSEQ_LENGTH - 1; i++ ) {
+		keySeq.getNextKey();
+	}
+	
+	assertTrue( keySeq.isLastKey() );
+}
+
+		</script>
+	</body>
+</html>
+
+

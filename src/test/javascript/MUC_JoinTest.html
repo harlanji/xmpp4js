@@ -1,0 +1,362 @@
+<html>
+	<head>
+		<title>JSUnit - RosterWindowTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+		
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+		
+		
+	</head>
+	<body>
+		<script type="text/javascript">
+
+var con;
+var mucman;
+var extProvider;
+
+function setUp() {
+    setupMockRequestPool();
+    setupMockHttpBindingStream();
+   
+    con = new Xmpp4Js.XmppDummyConnection( "im.cosmacs.org", "/http-bind/" );
+    
+    extProvider = new Xmpp4Js.Ext.PacketExtensionProvider()
+    extProvider.register( Xmpp4Js.Ext.Muc.XMLNS, Xmpp4Js.Ext.Muc );
+    extProvider.register( Xmpp4Js.Ext.MucUser.XMLNS, Xmpp4Js.Ext.MucUser );
+    extProvider.register( Xmpp4Js.Ext.Error.XMLNS, Xmpp4Js.Ext.Error );
+    
+    mucman = new Xmpp4Js.Muc.MucManager( con, "conference.soashable.com", extProvider );
+}
+
+function tearDown() {
+
+}
+
+function DISABLED_testGetMucNodes() {
+}
+
+function testGetRoomList() {
+    var txPacket = undefined;
+    var id = null;
+
+    var rpConn = con.getStream().getWriter().getConnection();
+
+    // create listener to catch outgoing packet
+    rpConn.addListener( "beforerequest", function(conn, options) { 
+            txPacket = options.xmlNode;
+            
+            
+            // make a fake response
+            options.responsePacket = loadTestPacket( "packets/muc_roomlist.xml", function(packet) {
+                packet.getElementsByTagName("iq" ).item(0).setAttribute( "id", txPacket.getElementsByTagName("iq" ).item(0).getAttribute( "id" ).toString() );
+                packet.getElementsByTagName("iq" ).item(0).setAttribute( "from", txPacket.getElementsByTagName("iq" ).item(0).getAttribute( "to" ).toString() );
+            });
+    });
+    
+    
+    var callbackRan = false;
+    mucman.getRoomList(function(mucman, rooms) {
+        callbackRan = true;
+        assertNotUndefined( txPacket );
+        
+        assertNotNull( rooms );
+        assertEquals( 4, rooms.length );
+    });
+ 
+    assertTrue( "Callback did not execute", callbackRan );
+}
+
+/**
+ * 6.3 - Expect Identity, Feature list
+ */
+function testGetRoomInfo() {
+    var room = mucman.getRoom("one");
+
+    
+}
+
+function DISABLED_testGetRoomFeaturesExtended() {
+
+}
+
+function testGetRoomParticipants() {
+    var room = mucman.getRoom("one");
+    var participants = room.getParticipants();
+}
+
+/**
+ * 6.5 - Expect bad-request
+ */
+function testGetRoomParticipantInfo_NonOccupant() {
+    try {
+    
+        fail( "Expected exception to be thrown" );
+    } catch( e ) {
+        assertTrue( e instanceof Xmpp4Js.Muc.MucError );
+        assertEquals( "400", e.code )
+    }
+}
+
+/**
+ * 6.5 - Expect Identity, Feature list
+ */
+function testGetRoomParticipantInfo_Occupant() {
+
+}
+
+/**
+ * 6.5 - Expect bad-request
+ */
+function testGetRoomParticipantRooms_NonOccupant() {
+    try {
+    
+        fail( "Expected exception to be thrown" );
+    } catch( e ) {
+        assertTrue( e instanceof Xmpp4Js.Muc.JoinError );
+        assertEquals( "400", e.code )
+    }
+}
+
+/**
+ * 6.5 - Expect List of rooms
+ */
+function testGetRoomParticipantRooms_Occupant() {
+
+}
+
+/**
+ * 7.1.2 - join chat, 7.1.3 expect presence broadcast from all participants 
+ *         including self (Status code=110 for self).
+ */
+function testJoinRoom() {
+    var rpConn = con.getStream().getWriter().getConnection();
+
+    // create listener to catch outgoing packet
+    rpConn.addListener( "beforerequest", function(conn, options) { 
+            var txPacket = options.xmlNode;
+            
+            
+            // make a fake response
+            options.responsePacket = loadTestPacket( "file://C:/Documents and Settings/Harlan/My Documents/NetBeansProjects/xmpp4js/trunk/target/jsunit/packets/muc_join.xml", function(packet) {
+                packet.getElementsByTagName("presence" )[0].setAttribute( "id", txPacket.getElementsByTagName("presence" )[0].getAttribute( "id" ).toString() );
+                packet.getElementsByTagName("presence" )[0].setAttribute( "from", txPacket.getElementsByTagName("presence" )[0].getAttribute( "to" ).toString() );
+            });
+    });
+    
+    
+    var callbackRan = false;
+    var room = mucman.getRoom( "soashable" ).createState();
+    room.on( "join", function(room, participant, packet) {
+        callbackRan = true;
+    });
+    
+    room.join("soashable");
+ 
+    assertTrue( "Callback did not execute", callbackRan );
+}
+
+/**
+ * 7.1.13 - Expect to join as normal 
+ */
+function testJoinRoom_NonExist_Create() {
+    var muc = mucman.getRoom( room );
+    muc.join( "thirdwitch" );
+}
+
+/**
+ * 7.1.13 - Not sure...
+ */
+function DISABLED_testJoinRoom_NonExist_Deny() {
+    var muc = mucman.getRoom( room );
+    muc.join( "thirdwitch" );
+}
+
+/**
+ * 7.1.10 - Expect 409 (conflict) error in response to presence
+ */
+function testJoinRoom_ConflictingNick() {
+    var rpConn = con.getStream().getWriter().getConnection();
+
+    // create listener to catch outgoing packet
+    rpConn.addListener( "beforerequest", function(conn, options) { 
+            var txPacket = options.xmlNode;
+            
+            
+            // make a fake response
+            options.responsePacket = loadTestPacket( "file://C:/Documents and Settings/Harlan/My Documents/NetBeansProjects/xmpp4js/trunk/target/jsunit/packets/muc_join_conflictingnick.xml", function(packet) {
+                packet.getElementsByTagName("presence" )[0].setAttribute( "id", txPacket.getElementsByTagName("presence" )[0].getAttribute( "id" ).toString() );
+                packet.getElementsByTagName("presence" )[0].setAttribute( "from", txPacket.getElementsByTagName("presence" )[0].getAttribute( "to" ).toString() );
+            });
+    });
+    
+    
+    var callbackRan = false;
+    var room = mucman.getRoom( "soashable" ).createState();
+    room.on( "error", function(room, participant, packet) {
+        callbackRan = true;
+        
+        var errorExt = packet.getExtension( Xmpp4Js.Ext.Error.XMLNS );
+        assertEquals( "409", errorExt.getCode() );
+        assertEquals( "auth", errorExt.getType() );
+    });
+    
+    room.join("soashable");
+ 
+    assertTrue( "Callback did not execute", callbackRan );
+}
+
+/**
+ * 7.1.11 - Expect 503 (service unavailable) error in response to presence
+ */
+function testJoinRoom_Full() {
+    var rpConn = con.getStream().getWriter().getConnection();
+
+    // create listener to catch outgoing packet
+    rpConn.addListener( "beforerequest", function(conn, options) { 
+            var txPacket = options.xmlNode;
+            
+            
+            // make a fake response
+            options.responsePacket = loadTestPacket( "file://C:/Documents and Settings/Harlan/My Documents/NetBeansProjects/xmpp4js/trunk/target/jsunit/packets/muc_join_roomfull.xml", function(packet) {
+                packet.getElementsByTagName("presence" )[0].setAttribute( "id", txPacket.getElementsByTagName("presence" )[0].getAttribute( "id" ).toString() );
+                packet.getElementsByTagName("presence" )[0].setAttribute( "from", txPacket.getElementsByTagName("presence" )[0].getAttribute( "to" ).toString() );
+            });
+    });
+    
+    
+    var callbackRan = false;
+    var room = mucman.getRoom( "soashable" ).createState();
+    room.on( "error", function(room, participant, packet) {
+        callbackRan = true;
+        
+        var errorExt = packet.getExtension( Xmpp4Js.Ext.Error.XMLNS );
+        assertEquals( "503", errorExt.getCode() );
+        assertEquals( "wait", errorExt.getType() );
+    });
+    
+    room.join("soashable");
+ 
+    assertTrue( "Callback did not execute", callbackRan );
+}
+
+/**
+ * 7.1.12 - Expect 404 (not found) error in response to presence
+ */
+function testJoinRoom_Locked() {
+    var muc = mucman.getRoom( room );
+    muc.join( "thirdwitch" );
+    
+    try {
+    
+        fail( "Expected exception to be thrown" );
+    } catch( e ) {
+        assertTrue( e instanceof Xmpp4Js.Muc.JoinError );
+        assertEquals( "404", e.code )
+    }
+}
+
+/**
+ * 7.1.5 - Expect full JID of each occupant
+ */
+function testJoinRoom_NonAnonymous() {
+    var muc = mucman.getRoom( room );
+    muc.join( "thirdwitch" );
+    
+    // expect to get participants
+}
+
+/**
+ * 7.1.7 - Expect 401 (not authorized) error in response to presence
+ */
+function testJoinPasswordRoom_WrongPassword() {
+    var muc = mucman.getRoom( room );
+    muc.join( "thirdwitch" );
+    
+    try {
+    
+        fail( "Expected exception to be thrown" );
+    } catch( e ) {
+        assertTrue( e instanceof Xmpp4Js.Muc.JoinError );
+        assertEquals( "403", e.code )
+    }
+
+}
+
+/**
+ * 7.1.7 - Expect successful join
+ */
+function testJoinPasswordRoom_CorrectPassword() {
+    var muc = mucman.getRoom( room );
+    muc.join( "thirdwitch" );
+}
+
+/**
+ * 7.1.8 - Expect 407 (reg required) error in response to presence
+ */
+function testJoinMemberRoom_NonMember() {
+    var muc = mucman.getRoom( room );
+    muc.join( "thirdwitch" );
+    
+    try {
+    
+        fail( "Expected exception to be thrown" );
+    } catch( e ) {
+        assertTrue( e instanceof Xmpp4Js.Muc.JoinError );
+        assertEquals( "407", e.code )
+    }
+}
+
+/**
+ * 7.1.8 - Expect successful join
+ */
+function testJoinMemberRoom_Member() {
+    var muc = mucman.getRoom( room );
+    muc.join( "thirdwitch" );
+}
+
+/**
+ * 7.1.9 - Expect 403 error in response to presence
+ */
+function testJoinRoom_Banned() {
+    var muc = mucman.getRoom( room );
+    muc.join( "thirdwitch" );
+    
+    try {
+    
+        fail( "Expected exception to be thrown" );
+    } catch( e ) {
+        assertTrue( e instanceof Xmpp4Js.Muc.JoinError );
+        assertEquals( "403", e.code )
+    }
+}
+
+
+/**
+ * Joining a room that the server has placed the current user in (i.e. the user
+ * did not request to join the room)
+ */
+function testJoinRoom_ServerPush() {
+    var muc = mucman.getRoom( room );
+    muc.join( "thirdwitch" );
+    
+    try {
+    
+        fail( "Expected exception to be thrown" );
+    } catch( e ) {
+        assertTrue( e instanceof Xmpp4Js.Muc.JoinError );
+        assertEquals( "403", e.code )
+    }
+}
+
+function testLeaveRoom() {
+
+}
+
+		</script>
+	</body>
+</html>
+
+
+
+

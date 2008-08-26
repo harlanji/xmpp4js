@@ -1,0 +1,104 @@
+<html>
+	<head>
+		<title>JSUnit - RosterWindowTest</title>
+		<script language="javascript" src="app/jsUnitCore.js"></script>
+		
+                <script type="text/javascript" src="includes.js"></script>
+		<script type="text/javascript" src="common-test-library.js"></script>
+		
+	</head>
+	<body>
+		<script type="text/javascript">
+var ELEM_NAME = "div";
+var TEXT = "text content";
+var NS = "urn:com.soashable.test";
+var PREFIX = "ns";
+var NS_ELEM_NAME = PREFIX + ":" + ELEM_NAME;
+
+
+// TODO is there an x-browser constant?
+var NODETYPE_TEXT = 3;
+
+function setUp() {
+}
+
+function tearDown() {
+}
+
+function testElementName() {
+	var elem = DomBuilder.node( ELEM_NAME );
+
+	assertEquals( ELEM_NAME, elem.nodeName );
+}
+
+function testAttributes() {
+	var elem = DomBuilder.node( ELEM_NAME, {"attr1": TEXT} );
+	
+	assertTrue( elem.hasAttribute( "attr1" ) );
+	assertEquals( TEXT, elem.getAttribute( "attr1" ).toString() );
+}
+
+function testChildNodes() {
+	var childNode = DomBuilder.node(ELEM_NAME);
+	var elem = DomBuilder.node( ELEM_NAME, undefined, [childNode] );
+
+	assertEquals( 1, elem.childNodes.getLength() );
+	assertEquals( childNode, elem.childNodes.item(0) );
+}
+
+function testTextContent() {
+	var elem = DomBuilder.node( ELEM_NAME, undefined, undefined, TEXT );
+
+	assertEquals( 1, elem.childNodes.getLength() );
+	
+	var textNode = elem.childNodes.item(0);
+	assertEquals( NODETYPE_TEXT, textNode.nodeType );
+	assertEquals( TEXT, textNode.getStringValue() );
+}
+
+function testChildNodesAndTextContent() {
+	var childNode = DomBuilder.node(ELEM_NAME);
+	var elem = DomBuilder.node( ELEM_NAME, undefined, [childNode], TEXT );
+	
+	assertEquals( 2, elem.childNodes.getLength() );
+	assertEquals( childNode, elem.childNodes.item(0) );
+	
+	var textNode = elem.childNodes.item(1);
+	assertEquals( NODETYPE_TEXT, textNode.nodeType );
+	assertEquals( TEXT, textNode.getStringValue() );
+}
+
+function testParentDoc() {
+	// the current document
+	var elem = DomBuilder.node( ELEM_NAME, undefined, undefined, undefined, document );
+
+	assertEquals( document, elem.ownerDocument );
+}
+
+function testNamespaceUri() {
+	var elem = DomBuilder.node( ELEM_NAME, {"xmlns": NS} );
+
+	assertEquals( NS, elem.namespaceURI );
+}
+
+function testNamespacePrefix() {
+	var attributes = {};
+	attributes[ "xmlns:" + PREFIX ] = NS;
+	
+	var elem = DomBuilder.node( NS_ELEM_NAME, attributes );
+
+	assertEquals( NS_ELEM_NAME, elem.tagName );
+	assertEquals( PREFIX, elem.prefix );
+	assertEquals( ELEM_NAME, elem.localName );
+	assertEquals( NS, elem.namespaceURI );
+	
+	
+}
+
+		</script>
+	</body>
+</html>
+
+
+
+

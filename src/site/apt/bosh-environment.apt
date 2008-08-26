@@ -1,0 +1,40 @@
+ ------
+ Creating a BOSH Environment
+ ------
+ Harlan Iverson
+ ------
+ 02/08/2008
+ ------
+
+Creating a BOSH Environment
+
+ There are three popular BOSH server implementations:
+
+  [[1]] Openfire HTTP Binding (built-in)
+
+  [[2]] JabberHTTPBind Servlet
+
+  [[3]] ejbabberd HTTP Binding (built-in)
+
+ Each has its own difficulties, mostly related to XEP-0124's inherent shortcoming, 
+ which is that it is bound by the same-origin policy. The easiest way to avoid 
+ that with zero configuration was to bundle the Soashable web application with 
+ the JabberHTTPBind servlet. I can not speak for its ability or inability to scale, 
+ as I have not conducted any type of benchmark on any of the three solutions. 
+
+ In order to use another solution, you must proxy HTTP requests to /http-bind/ to
+ another application server. This could be done using:
+
+  [[1]] Apache's mod_proxy
+
+  [[2]] Squid (or another transparent proxy)
+
+ I'd love to hear peoples' experiences with any of these configurations. I'd also 
+ like to post some step-by-step instructions, but don't feel it's worth my time 
+ at this point.
+
+* 2. JabberHTTPBind Servlet
+
+ Assuming you are creating a Java WAR project, this is the quickest way to get started. 
+ The servlet is available from {{http://zeank.in-berlin.de/jhb/}}, and can be 
+ added to your web application as any servlet would.
