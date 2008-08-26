@@ -51,7 +51,7 @@ http://maven.apache.org/maven-v4_0_0.xsd">
                 <configuration>
                     <descriptor>${basedir}/src/assembler/xmpp4js.xml</descriptor>
                     <includes>
-                        <include>LangTest.html</include>
+                        <include>*Test.html</include>
                     </includes>
                     <excludes>
                         <!-- hasn't been ported to new connection stuff yet -->

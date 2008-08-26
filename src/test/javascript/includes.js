@@ -10,8 +10,8 @@ function include(libraryName) {
 	document.getElementsByTagName("head")[0].appendChild( script );
 }
 
-include("lib/prototype.js");
-include("lib/extjs2.js");
+
+include("lib/log4js.js");
 include("lib/crypto.js");
 include("lib/dom-all.js");
 include("../classes/xmpp4js.js");
