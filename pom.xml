@@ -25,7 +25,7 @@ http://maven.apache.org/maven-v4_0_0.xsd">
             <groupId>net.sf.xml4script</groupId>
             <artifactId>xml4script</artifactId>
             <type>javascript</type>
-            <version>3.1-SNAPSHOT</version>
+            <version>3.1</version>
         </dependency>
         <dependency>
             <groupId>de.berlios.log4js</groupId>
@@ -39,7 +39,7 @@ http://maven.apache.org/maven-v4_0_0.xsd">
             <extension>
                 <groupId>org.codehaus.mojo.javascript</groupId>
                 <artifactId>javascript-maven-extensions</artifactId>
-                <version>1.0-alpha-1-SNAPSHOT</version>
+                <version>1.0-alpha-1</version>
             </extension>
         </extensions>
         <plugins>
@@ -72,7 +72,7 @@ http://maven.apache.org/maven-v4_0_0.xsd">
             <plugin>
                 <groupId>org.codehaus.mojo.javascript</groupId>
                 <artifactId>javascript-maven-plugin</artifactId>
-                <version>1.0-alpha-1-SNAPSHOT</version>
+                <version>1.0-alpha-1</version>
                 <extensions>true</extensions>
                 <configuration>
                     <descriptor>${basedir}/src/assembler/xmpp4js.xml</descriptor>
