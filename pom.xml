@@ -43,6 +43,32 @@ http://maven.apache.org/maven-v4_0_0.xsd">
             </extension>
         </extensions>
         <plugins>
+
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.scm</groupId>
+                        <artifactId>maven-scm-provider-gitexe</artifactId>
+                        <version>1.1-SNAPSHOT</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-scm-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.scm</groupId>
+                        <artifactId>maven-scm-provider-gitexe</artifactId>
+                        <version>1.1-SNAPSHOT</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+
             <plugin>
                 <groupId>org.codehaus.mojo.javascript</groupId>
                 <artifactId>javascript-maven-plugin</artifactId>
@@ -108,9 +134,9 @@ http://maven.apache.org/maven-v4_0_0.xsd">
         </site>
     </distributionManagement>
     <scm>
-        <connection>scm:svn:http://xmpp4js.svn.sourceforge.net/svnroot/xmpp4js/trunk</connection>
-        <developerConnection>scm:svn:https://xmpp4js.svn.sourceforge.net/svnroot/xmpp4js/trunk</developerConnection>
-        <url>http://xmpp4js.svn.sourceforge.net/viewvc/xmpp4js/</url>
+        <connection>scm:git:git://github.com/harlanji/xmpp4js.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/harlanji/xmpp4js.git</developerConnection>
+        <url>http://github.com/harlanji/xmpp4js</url>
     </scm>
     <licenses>
         <license>
