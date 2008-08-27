@@ -19,7 +19,7 @@ http://maven.apache.org/maven-v4_0_0.xsd">
             <groupId>uk.org.pajhome</groupId>
             <artifactId>crypto</artifactId>
             <type>javascript</type>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>net.sf.xml4script</groupId>
