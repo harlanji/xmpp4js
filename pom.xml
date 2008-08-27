@@ -7,7 +7,7 @@ http://maven.apache.org/maven-v4_0_0.xsd">
     <groupId>com.soashable.lib</groupId>
     <artifactId>xmpp4js</artifactId>
     <packaging>javascript</packaging>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.2.1-SNAPSHOT</version>
     <name>xmpp4js</name>
     <description>
         xmpp4js is an xmpp connection library for Javascript. It is written with a heavy emphasis 
